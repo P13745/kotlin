@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">ArtSpace</string>
+    <string name="title1">柚子</string>
+    <string name="text1">冬至だったので柚子湯に</string>
+    <string name="title2">廃墟</string>
+    <string name="text2">家の解体現場がなんとなく気になって</string>
+    <string name="title3">八角</string>
+    <string name="text3">とてもいい香り</string>
+    <string name="title4">落ち葉</string>
+    <string name="text4">落ち着いた色合い</string>
+    <string name="title5">ハイイロハスノハカシパン</string>
+    <string name="text5">棘皮動物の一種の骨格</string>
+    <string name="title6">ユリカモメ</string>
+    <string name="text6">洗足池公園を散歩しているときに</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="error">Error!</string>
+    <string name="back">To the fist</string>
+    <string name="last">To the last</string>
+</resources>
