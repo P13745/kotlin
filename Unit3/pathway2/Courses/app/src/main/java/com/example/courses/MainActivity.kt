@@ -128,7 +128,7 @@ fun CoursesApp() {
     val leftOrRight = DataSource.topics.groupBy { DataSource.topics.indexOf(it) % 2 }
 
     Row(
-        modifier =Modifier
+        modifier = Modifier
             .fillMaxSize(),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
@@ -148,6 +148,8 @@ fun CoursesApp() {
                     modifier = Modifier
                 )
             }
+
+
 
         }
 
