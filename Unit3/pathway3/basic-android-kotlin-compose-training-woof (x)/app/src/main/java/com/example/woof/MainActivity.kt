@@ -56,10 +56,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             WoofTheme {
                 // A surface container using the 'background' color from the theme
+                //Text("123")
+
                 Surface(
                     modifier = Modifier.fillMaxSize()
                 ) {
+                    //Text("456")
                     WoofApp()
+                    //Text("789")
                 }
             }
         }
@@ -75,6 +79,7 @@ fun WoofApp() {
     Scaffold(
         topBar = {
             WoofTopAppBar()
+            //Text("123456")
         }
     ) { it ->
         LazyColumn(contentPadding = it) {
@@ -129,7 +134,7 @@ fun WoofTopAppBar(modifier: Modifier = Modifier) {
                 )
 
                 Text(
-                    text = "test"/*stringResource(R.string.app_name)*/,
+                    text = /*"test"*/ stringResource(R.string.app_name),
                     style = MaterialTheme.typography.displayLarge
                 )
 
@@ -138,6 +143,7 @@ fun WoofTopAppBar(modifier: Modifier = Modifier) {
         modifier = modifier
     )
 }
+
 
 /**
  * Composable that displays a photo of a dog.
