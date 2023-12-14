@@ -95,7 +95,6 @@ fun DessertClickerApp(
             dessertImageId = gameUiState.currentDessert.imageId,
             onDessertClicked = {
 
-
                 gameViewModel.buttonAction()   //(更新する処理ー>現在の状態を表示する処理)
 
             },
