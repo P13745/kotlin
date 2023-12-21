@@ -300,8 +300,12 @@ private fun NavigationDrawerHeader(
     }
 }
 
+
+
 private data class NavigationItemContent(
     val mailboxType: MailboxType,
     val icon: ImageVector,
     val text: String
 )
+
+
