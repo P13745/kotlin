@@ -51,8 +51,8 @@ data class ImageLinks(
 
 @Serializable
 data class QueryResponse(
-    val kind: String,
-    val totalItems: Int,
+    //val kind: String,
+    //val totalItems: Int,
     val items: List<Book>?,
 
 )
@@ -65,43 +65,59 @@ kind
 totalItems
 Items--------List<Book>
 
-Book----id
-        description
-        volumeInfo-------title
-        saleInfo         subtitle
+Book----kind    accessInfo---------------------------------country
+        id      searchInfo--------textSnippet              viewability
+        etag                                               embeddable(Boolean)
+        selfLink                                           publicDomain(Boolean)
+        volumeInfo-------title                             textToSpeechPermission
+        saleInfo         subtitle                          epub------------------------isAvailable(Boolean)
+        |                authors (List<String>)            pdf-------------------------isAvailable(Boolean)
+        |                publisher                         webReaderLink               acsTokenLink
+        |                publishedDate
         |                description
-        |                imageLinks-------------smallThumbnail
-        |                auther                thumbnail(ココ)
-        |                publisher
-        |                publishedData
+        |                industryIdentifiers------List<II> II----type
+        |                readingModes------text(Boolean)         identifier
+        |                pageCount(Int)    image(Boolean)
+        |                printType
+        |                categories (List<String>)
+        |                maturityRating
+        |                allowAnonLogging(Boolean)
+        |                contentVersion
+        |                panelizationSummary---------------------------containsEpubBubbles(Boolean)
+        |                imageLinks-------------smallThumbnail         containsImageBubbles(Boolean)
+        |                language               thumbnail(ココ)
+        |                previewLink
+        |                infoLink
+        |                canonicalVolumeLink
+        |
         country
-        isEbook
-        listPrice-------amount
-                        country
+        saleability
+        isEbook(Boolean)
 
  */
 @Serializable
 data class Book(
-    val id: String,
-    val description: String,
+    //val kind: String,
+    //val id: String,
+    //val description: String,
     val volumeInfo: VolumeInfo,
-    val saleInfo: SaleInfo
+    //val saleInfo: SaleInfo
 )
 
 @Serializable
 data class VolumeInfo(
-    val title: String,
-    val subtitle: String,
-    val description: String,
+    //val title: String,
+    //val subtitle: String,
+    //val description: String,
     val imageLinks: ImageLinks? = null,
-    val authors: List<String>,
-    val publisher: String,
-    val publishedDate: String,
+    //val authors: List<String>,
+    //val publisher: String,
+    //val publishedDate: String,
 )
 
 @Serializable
 data class ImageLinks(
-    val smallThumbnail: String,
+    //val smallThumbnail: String,
     val thumbnail: String,
 ) {
     val convertToHhttps : String
