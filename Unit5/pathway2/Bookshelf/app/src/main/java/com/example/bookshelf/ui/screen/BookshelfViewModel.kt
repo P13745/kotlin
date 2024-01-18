@@ -20,8 +20,11 @@ sealed interface BookshelfUiState {
     object Loading : BookshelfUiState
 }
 
-class BookshelfViewModel(private val bookshelfDataRepository: BookshelfDataRepository): ViewModel() {
 
+
+
+class BookshelfViewModel(private val bookshelfDataRepository: BookshelfDataRepository): ViewModel() {
+//demo2を見ると、このファイルはDefaultBookshelfRepositoryとなっている
     var bookshelfUiState: BookshelfUiState by mutableStateOf(BookshelfUiState.Loading)
         private set
 
@@ -33,22 +36,19 @@ class BookshelfViewModel(private val bookshelfDataRepository: BookshelfDataRepos
 
     fun getBookshelfData() {
         viewModelScope.launch {
-            bookshelfUiState = BookshelfUiState.Success(bookshelfDataRepository.getBookshelfData())
-            /*bookshelfUiState = BookshelfUiState.Loading
+            //bookshelfUiState = BookshelfUiState.Success(bookshelfDataRepository.getBookshelfData())
+            bookshelfUiState = BookshelfUiState.Loading
             bookshelfUiState = try {
                 BookshelfUiState.Success(bookshelfDataRepository.getBookshelfData())
 
-            } catch (e: IOException) {
-                BookshelfUiState.Error
-            } catch (e: HttpException) {
+            } catch (e: Exception) {
                 BookshelfUiState.Error
             }
 
-             */
-
-
         }
     }
+
+    //ここを二つに、queryからList<Book>、idからBook(?)
 
 
     companion object {

@@ -4,10 +4,9 @@ package com.example.bookshelf.network
 
 
 
-import com.example.bookshelf.model.BookListResponse
-import com.example.bookshelf.model.VolumeInfoResponse
+
+import com.example.bookshelf.model.QueryResponse
 import retrofit2.http.GET
-import retrofit2.http.Path
 import retrofit2.http.Query
 
 
@@ -18,15 +17,15 @@ const val APIKEY: String =""
 interface BookshelfApiService {
     //@GET("volumes?q=classical+music+history+soviet&key=$APIKEY")
     @GET("volumes")
-    suspend fun getListData(@Query("q") query: String = "classical+music+history+soviet", @Query("key") apiKey: String = APIKEY): BookListResponse
+    suspend fun getListData(@Query("q") query: String = "classical+music+history+soviet", @Query("key") apiKey: String = APIKEY): QueryResponse
 
 
-
+/*
 
     //@GET("volumes/{id}?key=$APIKEY")
     @GET("volumes/{id}")
     suspend fun getThumbnail(@Path("id") id: String, @Query("key") apiKey: String = APIKEY): VolumeInfoResponse
-
+//逆にここ上二つしかない
 
     suspend fun convertBookIdListToThumbnailsList(bookId: List<String>): List<String> {
         try {
@@ -62,7 +61,7 @@ interface BookshelfApiService {
 
  */
 
-
+*/
 
 
 }

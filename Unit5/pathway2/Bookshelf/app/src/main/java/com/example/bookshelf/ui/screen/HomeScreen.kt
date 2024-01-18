@@ -78,7 +78,7 @@ fun DescriptionListScreen(data: List<String>, modifier: Modifier) {
         modifier = modifier.fillMaxWidth(),
         contentPadding = PaddingValues(4.dp)
     ) {
-        item {Text(text = data.size.toString()) }
+        //item {Text(text = data.size.toString()) }
         items(items = data, key = { datum -> datum.hashCode() }) {
                 datum -> BookshelfCard(
             datum,
@@ -100,9 +100,10 @@ fun BookshelfCard(datum: String, modifier: Modifier) {
     ) {
 
 
+        if(datum != "") {
             AsyncImage(
                 model = ImageRequest.Builder(context = LocalContext.current)
-                    .data(datum.replace("http://", "https://"))
+                    .data(datum)
                     .crossfade(true)
                     .build(),
                 contentDescription = null,
@@ -113,6 +114,8 @@ fun BookshelfCard(datum: String, modifier: Modifier) {
                 error = painterResource(R.drawable.ic_broken_image),
                 placeholder = painterResource(R.drawable.loading_img)
             )
+        }
+
 
 
     }

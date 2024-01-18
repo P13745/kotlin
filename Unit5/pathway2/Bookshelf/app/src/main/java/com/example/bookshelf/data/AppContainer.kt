@@ -8,6 +8,8 @@ import retrofit2.Retrofit
 
 interface AppContainer {
     val BookshelfDataRepository: BookshelfDataRepository
+
+    //ここも二つにしてるdemo2だと bookshelfApiServiceとbookshelfRepositoryの二つ
 }
 
 
@@ -24,6 +26,8 @@ class DefaultAppContainer : AppContainer {
     private val retrofitService: BookshelfApiService by lazy {
         retrofit.create(BookshelfApiService::class.java)
     }
+
+
 
 
     override val BookshelfDataRepository: BookshelfDataRepository by lazy {

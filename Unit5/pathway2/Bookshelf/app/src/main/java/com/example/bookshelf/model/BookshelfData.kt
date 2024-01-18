@@ -21,11 +21,10 @@ data class Items (
 data class Thumbnail(
     val thumbnail :String
 )
-*/
 
 @Serializable
 data class BookListResponse(
-    val items: List<Item>
+    val items: ArrayList<Item>
 )
 
 @Serializable
@@ -46,4 +45,77 @@ data class VolumeInfo(
 @Serializable
 data class ImageLinks(
     val thumbnail: String
+)
+*/
+
+
+@Serializable
+data class QueryResponse(
+    val items: List<Book>?,
+    val totalItems: Int,
+    val kind: String,
+)
+
+//item[~].volumeInfo.imageLinks.thmbnail と(http→https)でリンクを取得
+
+
+/*
+kind
+totalItems
+Items--------List<Book>
+
+Book----id
+        description
+        volumeInfo-------title
+        saleInfo         subtitle
+        |                description
+        |                imageLiks-------------smallThumbnail
+        |                auther                thumbnail(ココ)
+        |                publisher
+        |                publishedData
+        country
+        isEbook
+        listPrice-------amount
+                        country
+
+ */
+@Serializable
+data class Book(
+    val id: String,
+    val description: String,
+    val volumeInfo: VolumeInfo,
+    val saleInfo: SaleInfo
+)
+
+@Serializable
+data class VolumeInfo(
+    val title: String,
+    val subtitle: String,
+    val description: String,
+    val imageLinks: ImageLinks? = null,
+    val authors: List<String>,
+    val publisher: String,
+    val publishedDate: String,
+)
+
+@Serializable
+data class ImageLinks(
+    val smallThumbnail: String,
+    val thumbnail: String,
+) {
+    val convertToHhttps : String
+        get() = thumbnail.replace("http", "https")
+}
+
+@Serializable
+data class SaleInfo(
+    val country: String,
+    val isEbook: Boolean,
+    val listPrice: ListPrice?
+)
+
+@Serializable
+data class ListPrice(
+    val amount: Float?,
+    val currency: String? = ""
 )
