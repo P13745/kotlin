@@ -14,5 +14,15 @@ interface BookshelfDataRepository {
 class NetworkBookshelfDataRepository(
     private val bookshelfApiService: BookshelfApiService
 ) : BookshelfDataRepository {
-    override suspend fun getBookshelfData(): List<String> = bookshelfApiService.getListData().items?.map {it.volumeInfo.imageLinks?.convertToHhttps ?: ""} ?: listOf("")
+    override suspend fun getBookshelfData(): List<String> {
+        try {
+            val x = bookshelfApiService.getListData()
+
+
+            return x.items?.map { it.volumeInfo.imageLinks?.convertToHhttps ?: "" } ?: listOf("")
+        } catch (e: Exception) {
+            println(e)
+            return listOf()
+        }
+    }
 }

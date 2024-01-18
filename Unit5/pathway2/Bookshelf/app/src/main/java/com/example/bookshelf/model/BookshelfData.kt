@@ -51,9 +51,10 @@ data class ImageLinks(
 
 @Serializable
 data class QueryResponse(
-    val items: List<Book>?,
-    val totalItems: Int,
     val kind: String,
+    val totalItems: Int,
+    val items: List<Book>?,
+
 )
 
 //item[~].volumeInfo.imageLinks.thmbnail と(http→https)でリンクを取得
@@ -69,7 +70,7 @@ Book----id
         volumeInfo-------title
         saleInfo         subtitle
         |                description
-        |                imageLiks-------------smallThumbnail
+        |                imageLinks-------------smallThumbnail
         |                auther                thumbnail(ココ)
         |                publisher
         |                publishedData
