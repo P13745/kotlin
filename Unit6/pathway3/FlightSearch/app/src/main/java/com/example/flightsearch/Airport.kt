@@ -11,4 +11,5 @@ data class Airport(
     @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "passengers") val passengers: Int,
 
+
 )

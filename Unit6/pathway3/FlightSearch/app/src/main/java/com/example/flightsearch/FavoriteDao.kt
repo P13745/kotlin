@@ -15,10 +15,10 @@ interface FavoriteDao {
 
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(favorite: Favorite)
+    suspend fun insert(favorite: Favorite)
 
     @Delete
-    fun delete(favorite: Favorite)
+    suspend fun delete(favorite: Favorite)
 
     @Query("SELECT * FROM favorite")
     fun getAll(): Flow<List<Favorite>>

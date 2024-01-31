@@ -9,12 +9,13 @@ import kotlinx.coroutines.flow.Flow
 
 
 
+
 class FavoriteViewModel(private val favoriteDao: FavoriteDao): ViewModel() {
 
     fun getFullFavorite(): Flow<List<Favorite>> = favoriteDao.getAll()
 
-    fun addFavorite(favorite: Favorite): Unit = favoriteDao.insert(favorite)
-    fun deleteFavorite(favorite: Favorite): Unit = favoriteDao.delete(favorite)
+    suspend fun addFavorite(favorite: Favorite): Unit = favoriteDao.insert(favorite)
+    suspend fun deleteFavorite(favorite: Favorite): Unit = favoriteDao.delete(favorite)
 
 
     companion object {
