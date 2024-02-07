@@ -1,0 +1,64 @@
+package com.example.juicetracker.ui.bottomsheet
+
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.viewinterop.AndroidView
+import com.example.juicetracker.R
+import com.example.juicetracker.data.JuiceColor
+
+class SpinnerAdapter(val onColorChange: (Int) -> Unit) : AdapterView.OnItemSelectedListener {
+    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+        onColorChange(position)
+    }
+
+    override fun onNothingSelected(parent: AdapterView<*>?) {
+        onColorChange(0) //デフォルトの色は0でred
+    }
+}
+
+@Composable
+fun ColorSpinnerRow(
+    colorSpinnerPosition: Int,
+    onColorChange: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val juiceColorArray =
+        JuiceColor.values().map { juiceColor -> stringResource(juiceColor.label) }
+    InputRow(inputLabel = stringResource(R.string.color), modifier = modifier) {
+        //AndroidView コンポーズ可能関数は、次の 3 つのパラメータを取ります。
+        //factory ラムダ。ビューを作成する関数です。
+        //update コールバック。factory で作成されたビューがインフレートされるときに呼び出されます。
+        //コンポーズ可能な関数の修飾子 modifier。
+        AndroidView(
+            modifier = Modifier.fillMaxWidth(),
+            factory = { context ->
+                Spinner(context).apply {//回して選択するスイッチ
+                    adapter =//ArrayAdapter を使用してアダプタを設定します。
+                            // ArrayAdapter には、コンテキスト、XML レイアウト、配列が必要です。
+                            // レイアウトに simple_spinner_dropdown_item を渡します。
+                            // このレイアウトは、Android のデフォルトとして提供されています。
+                        ArrayAdapter(
+                            context,
+                            android.R.layout.simple_spinner_dropdown_item,
+                            juiceColorArray
+                        )
+                }
+            },
+            update = { spinner ->
+                spinner.setSelection(colorSpinnerPosition)
+                spinner.onItemSelectedListener = SpinnerAdapter(onColorChange)
+            }
+        )
+    }
+}
+
+fun findColorIndex(color: String): Int {
+    val juiceColor = JuiceColor.valueOf(color)
+    return JuiceColor.values().indexOf(juiceColor)
+}
