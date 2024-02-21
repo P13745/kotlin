@@ -2,13 +2,11 @@ package com.example.myapplication
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,7 +14,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -24,25 +21,31 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-
+import com.example.myapplication.data.Edge
+import com.example.myapplication.data.Vertex
 
 
 @Composable
-fun VertexFromList(vertexList: List<Triple<Int, Float, Float>>, circleSize: Dp) {
+fun VertexAndEdgeFromList(
+    vertexList: List<Vertex>,
+    edgeList: List<Edge>,
+    directed: Boolean
+) {
     val shift = 60f
-    // サイズの変換
-    val circleSizePx = with(LocalDensity.current) { circleSize.toPx() }
+    val circleSizePx = with(LocalDensity.current) { (8.dp).toPx() }
 
     Canvas(
         modifier = Modifier.fillMaxSize()
@@ -51,28 +54,32 @@ fun VertexFromList(vertexList: List<Triple<Int, Float, Float>>, circleSize: Dp) 
             drawCircle(
                 color = Color.Blue,
                 radius = circleSizePx / 2f,
-                center = Offset(it.second, it.third)
+                center = Offset(it.x, it.y)
             )
             val text = (vertexList.indexOf(it) + 1).toString()
             val paint = android.graphics.Paint().apply { textSize = 48f }
             drawContext.canvas.nativeCanvas.drawText(
                 text,
-                it.second - paint.measureText(text)/2,
-                it.third + shift ,
+                it.x - paint.measureText(text)/2,
+                it.y + shift ,
                 paint,
+            )
+        }
+
+        edgeList.forEach { edge ->
+            val startVertex = vertexList[edge.startId]
+            val endVertex = vertexList[edge.endId]
+            drawLine(
+                color = Color.Black,
+                start = Offset(startVertex.x, startVertex.y),
+                end = Offset(endVertex.x, endVertex.y),
+                strokeWidth = 2f
             )
         }
     }
 }
 
-@Composable
-fun EdgeFromList(
-    edgeList: List<Triple<Int, Int, Int>>,
-    vertexList: List<Triple<Int, Float, Float>>,
-    directed: Boolean
-) {
-    //TODO("Not yet implemented")
-}
+
 
 
 
@@ -83,12 +90,13 @@ fun EditTable(
     deleteVertex: (Pair<Float,Float>) -> Unit,
     addEdge: (Pair<Int, Int>) ->Unit,
     deleteEdge: (Pair<Int, Int>) -> Unit,
-    onValueChangeOfStart: (Int) -> Unit,
-    onValueChangeOfEnd: (Int) -> Unit,
+    onValueChangeOfStart: (Int?) -> Unit,
+    onValueChangeOfEnd: (Int?) -> Unit,
     move: (id: Int, direction: String, distance: Float) ->Unit,
     movingSpeed: Float,
-    startQuery: Int,
-    endQuery: Int
+    startQuery: Int?,
+    endQuery: Int?,
+    directed: Boolean
 ){
     Row(modifier = Modifier.fillMaxWidth()){
 
@@ -110,7 +118,8 @@ fun EditTable(
             onValueChangeOfStart = onValueChangeOfStart,
             onValueChangeOfEnd = onValueChangeOfEnd,
             startQuery = startQuery,
-            endQuery = endQuery
+            endQuery = endQuery,
+            directed = directed
         )
 
     }
@@ -140,7 +149,7 @@ fun EditVertex(
 
 
             items(items = vertexList,
-                key = { vertex -> (vertex.hashCode() to "v") }) { vertex ->
+                key = { vertex -> vertex.id }) { vertex ->
                 val id = vertexList.indexOf(vertex)
                 EachVertex(
                     vertex = vertex,
@@ -166,7 +175,7 @@ fun EditVertex(
 
 @Composable
 fun EachVertex(
-    vertex: Triple<Int, Float, Float>,
+    vertex: Vertex,
     deleteVertex: (Pair<Float,Float>) -> Unit,
     id: Int,
     move: (id: Int, direction: String, distance: Float) ->Unit,
@@ -220,7 +229,7 @@ fun EachVertex(
 
 
             Button(
-                onClick = { deleteVertex(Pair(vertex.second, vertex.third)) },
+                onClick = { deleteVertex(Pair(vertex.x, vertex.y)) },
                 content = { Text("Delete") }
             )
 
@@ -232,16 +241,17 @@ fun EachVertex(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun EditEdge(
     uiState: UiState,
     addEdge: (Pair<Int, Int>) ->Unit,
     deleteEdge: (Pair<Int, Int>) -> Unit,
-    onValueChangeOfStart: (Int) -> Unit,
-    onValueChangeOfEnd: (Int) -> Unit,
-    startQuery: Int,
-    endQuery: Int
+    onValueChangeOfStart: (Int?) -> Unit,
+    onValueChangeOfEnd: (Int?) -> Unit,
+    startQuery: Int?,
+    endQuery: Int?,
+    directed: Boolean
 ) {
 
 
@@ -273,11 +283,15 @@ fun EditEdge(
                 Column() {
                     Row() {
 
+
+                        val keyboardController = LocalSoftwareKeyboardController.current
                         OutlinedTextField(
-                            value = uiState.startQuery.toString(), //if (startQuery == 0) "" else startQuery.toString(),
+                            value = startQuery?.toString() ?: "",
                             onValueChange = { newValue: String ->
+                                if(newValue == ""){onValueChangeOfStart(null)}
                                 if (newValue.isNotEmpty() && newValue.all { it.isDigit() }) {
-                                    onValueChangeOfStart(newValue.toInt())
+                                    val newStartQuery =  newValue.toInt()
+                                    onValueChangeOfStart(newStartQuery)
                                 }
                             },
                             singleLine = true,
@@ -286,9 +300,10 @@ fun EditEdge(
                                 .width(72.dp)
                                 .height(64.dp),
                             label = { Text(text = "Start") },
-                            isError = (startQuery <= 0)  && (startQuery == endQuery) &&(startQuery > uiState.vertexList.size),
+                            isError = ( startQuery==null ) || (startQuery <= 0)  && (startQuery == endQuery) &&(startQuery > uiState.vertexList.size),
                             keyboardOptions = KeyboardOptions.Default.copy(
-                                imeAction = ImeAction.Next
+                                imeAction = ImeAction.Next,
+                                keyboardType = KeyboardType.Number
                             ),
                             keyboardActions = KeyboardActions(
                                 onDone = { }
@@ -298,8 +313,9 @@ fun EditEdge(
 
 
                         OutlinedTextField(
-                            value = uiState.endQuery.toString(),//if (endQuery == 0) "" else endQuery.toString(),
+                            value = endQuery?.toString() ?: "",
                             onValueChange = { newValue: String ->
+                                if(newValue == ""){onValueChangeOfEnd(null)}
                                 if (newValue.isNotEmpty() && newValue.all { it.isDigit() }) {
                                     onValueChangeOfEnd(newValue.toInt())
                                 }
@@ -310,33 +326,55 @@ fun EditEdge(
                                 .width(72.dp)
                                 .height(64.dp),
                             label = { Text(text = "End") },
-                            isError = (endQuery <= 0) && (startQuery == endQuery) && (endQuery > uiState.vertexList.size),
+                            isError = ( endQuery==null ) || (endQuery <= 0) && (startQuery == endQuery) && (endQuery > uiState.vertexList.size),
                             keyboardOptions = KeyboardOptions.Default.copy(
-                                imeAction = ImeAction.Done
+                                imeAction = ImeAction.Done,
+                                keyboardType = KeyboardType.Number
                             ),
                             keyboardActions = KeyboardActions(
-                                onDone = { }
+                                onDone = {
+                                    keyboardController?.hide()
+                                }
                             )
                         )
                     }
 
                     Button(
-                        enabled = (uiState.startQuery > 0) && (uiState.endQuery > 0)
+                        enabled = (uiState.startQuery != null) && (uiState.endQuery != null)
+                                &&(uiState.startQuery > 0) && (uiState.endQuery > 0)
                                 && (uiState.startQuery <= uiState.vertexList.size)
                                 && (uiState.endQuery <= uiState.vertexList.size)
-                                && (uiState.endQuery != uiState.vertexList.size),
-                        onClick = { addEdge(uiState.endQuery - 1 to uiState.startQuery - 1) },
+                                && (uiState.endQuery != uiState.startQuery)
+                                && (uiState.edgeList.filter { edge ->
+                            !(Pair(edge.startId, edge.endId) != Pair(uiState.startQuery - 1,uiState.endQuery - 1)
+                                    && (Pair(edge.endId,edge.startId) != Pair(uiState.startQuery - 1,uiState.endQuery - 1) || directed) )
+                        }.toMutableList().size == 0 ),
+                        onClick = {
+                            if((uiState.startQuery != null)&& (uiState.endQuery != null)){
+                            addEdge(uiState.endQuery - 1 to uiState.startQuery - 1)
+                            }
+                            onValueChangeOfStart( null )
+                            onValueChangeOfEnd( null )
+                                  },
                         content = { Text("Add vertex") }
                     )
-                    if((uiState.endQuery == uiState.vertexList.size)){
+                    if((uiState.startQuery != null) && (uiState.endQuery != null)
+                        && (uiState.edgeList.filter { edge ->
+                            !(Pair(edge.startId, edge.endId) != Pair(uiState.startQuery - 1,uiState.endQuery - 1)
+                                    && (Pair(edge.endId,edge.startId) != Pair(uiState.startQuery - 1,uiState.endQuery - 1) || directed) )
+                        }.toMutableList().size > 0 )){
+                        Text("The edge already exists (directed? : ${uiState.directed})")
+                    }
+                    if((uiState.endQuery != null)&&(uiState.endQuery == uiState.startQuery)){
                         Text("Start and End must be different")
                     }
-                    if((uiState.startQuery <= 0) || (uiState.startQuery > uiState.vertexList.size)) {
+                    if((uiState.startQuery != null)&&((uiState.startQuery <= 0) || (uiState.startQuery > uiState.vertexList.size))) {
                         Text("Start should be selected from the corresponding vertex range")
                     }
-                    if((uiState.endQuery <= 0) || (uiState.endQuery > uiState.vertexList.size)) {
+                    if((uiState.endQuery != null)&&((uiState.endQuery <= 0) || (uiState.endQuery > uiState.vertexList.size))) {
                         Text("End should be selected from the corresponding vertex range")
                     }
+
 
 
                 }
@@ -351,7 +389,7 @@ fun EditEdge(
 
 @Composable
 fun EachEdge(
-    edge: Triple<Int, Int, Int>,
+    edge: Edge,
     deleteEdge: (Pair<Int, Int>) -> Unit,
 ){
 
@@ -360,9 +398,9 @@ fun EachEdge(
            horizontalArrangement = Arrangement.SpaceEvenly,
            modifier = Modifier.fillMaxWidth()
        ){
-           Text(text= (edge.second + 1).toString() + " - " + (edge.third + 1).toString())
+           Text(text= (edge.startId + 1).toString() + " - " + (edge.endId + 1).toString())
            Button(
-               onClick = {  deleteEdge( Pair(edge.second, edge.third)) },
+               onClick = {  deleteEdge( Pair(edge.startId, edge.endId)) },
                content = { Text("Delete") }
            )
 
@@ -391,7 +429,8 @@ fun previewEditTable() {
         move = { _, _, _ -> {} },
         movingSpeed =10f,
         startQuery = 1,
-        endQuery =1
+        endQuery =1,
+        directed = false
     )
 }
 
