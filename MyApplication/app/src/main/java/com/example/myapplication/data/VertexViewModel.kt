@@ -6,11 +6,36 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.myapplication.GraphApplication
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class VertexViewModel(private val vertexDao: VertexDao): ViewModel() {
 
 
-    fun getFullVertex(): Flow<List<Vertex>> = vertexDao.getAll()
+    //fun getFullVertex(): Flow<List<Vertex>> = vertexDao.getAll()
+
+    fun getFullVertex(): Flow<List<Vertex>>  {
+        return vertexDao.getAll().map { vertexList ->
+            if (vertexList.isEmpty()) return@map emptyList()
+
+            //==================================================================
+            val mutableList = vertexList.toMutableList()
+            val lastElement = mutableList.removeAt(mutableList.size - 1)
+            mutableList.add(0, lastElement)
+            //==================================================================
+
+            mutableList.mapIndexed { index, vertex ->
+                vertex.copy(id = index )        ///??????????????????
+            }
+        }
+    }
+
+    suspend fun deletAllVertex(): Unit = vertexDao.deleteAll()
+
+    suspend fun insertAllVertex(vertexList: List<Vertex>): Unit = vertexDao.insertAll(vertexList)
+
+
+
+
 
 
     companion object {

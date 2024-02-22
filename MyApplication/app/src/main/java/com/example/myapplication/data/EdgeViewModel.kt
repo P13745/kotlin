@@ -6,11 +6,32 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.myapplication.GraphApplication
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class EdgeViewModel(private val edgeDao: EdgeDao): ViewModel() {
 
 
-    fun getFullEdge(): Flow<List<Edge>> = edgeDao.getAll()
+    fun getFullEdge(): Flow<List<Edge>>  {
+        return edgeDao.getAll().map { edgeList ->
+            if (edgeList.isEmpty()) return@map emptyList()
+
+
+            //==================================================================
+            val mutableList = edgeList.toMutableList()
+            val lastElement = mutableList.removeAt(mutableList.size - 1)
+            mutableList.add(0, lastElement)
+            //==================================================================
+
+            mutableList.mapIndexed { index, edge ->
+                edge.copy(id = index)
+            }
+        }
+    }
+
+    suspend fun deletAllEdge(): Unit = edgeDao.deleteAll()
+
+    suspend fun insertAllEdge(edgeList: List<Edge>): Unit = edgeDao.insertAll(edgeList)
+
 
 
     companion object {

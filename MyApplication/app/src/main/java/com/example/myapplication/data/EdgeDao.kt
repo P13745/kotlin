@@ -21,14 +21,7 @@ interface EdgeDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(edges: List<Edge>)
 
-
-    /*
-    @Query("CREATE TABLE IF NOT EXISTS edge (" +
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            "start_id INTEGER NOT NULL, " +
-            "end_id INTEGER NOT NULL)")
-    suspend fun createTable()
-
-     */
+    @Query("DELETE FROM edge")
+    suspend fun deleteAll()
 
 }

@@ -76,7 +76,7 @@ class GraphViewModel(
 
 
 
-    fun save(vertexList: List<Vertex>, edgeList: List<Edge>){
+    fun load(vertexList: List<Vertex>, edgeList: List<Edge>){
         var currentUiState = _uiState.value.copy()
         _uiState.value = currentUiState.copy(vertexList = vertexList, edgeList = edgeList)
 
@@ -119,23 +119,52 @@ class GraphViewModel(
 
     }
 
-
+/*
     fun deleteVertex(id: Int) {
         var currentUiState = _uiState.value.copy()
         var updatedVertexList = currentUiState.vertexList.toMutableList()
         var updatedEdgeList = currentUiState.edgeList.toMutableList()
 
-        if (currentUiState.vertexList.size > id && id >= 0) {
-            updatedVertexList.removeAt(id)
-            updatedEdgeList =
-                updatedEdgeList.filter { edge -> edge.startId != id && edge.endId != id }
+        if (id >= 0 && id < currentUiState.vertexList.size) {
+            // updatedVertexList.removeAt(id)
+            updatedVertexList = updatedVertexList.filter {vertex -> vertex.id != id}
+                .toMutableList()
+
+
+            updatedEdgeList = updatedEdgeList.filter { edge -> edge.startId != id && edge.endId != id }
                     .toMutableList()
+
+
+
+/*
+            updatedEdgeList = updatedEdgeList.map { edge ->
+                if (edge.startId > id) {
+                    edge.copy(startId = edge.startId - 1)
+                }
+                if (edge.endId > id) {
+                    edge.copy(endId = edge.endId - 1)
+                }
+                edge
+            }.toMutableList()
+
+ */
+
+            updatedEdgeList.forEachIndexed { index, edge ->
+                if (edge.startId > id) {
+                    updatedEdgeList[index] = edge.copy(startId = edge.startId - 1)
+                }
+                if (edge.endId > id) {
+                    updatedEdgeList[index] = edge.copy(endId = edge.endId - 1)
+                }
+            }
+
+
         }
 
-        val reindexedEdgeList = updatedEdgeList.sortedBy { it.id }.mapIndexed { index, edge ->
-            Edge(index, edge.startId, edge.endId)}
-        val reindexedVertexList = updatedVertexList.sortedBy { it.id }.mapIndexed { index, vertex ->
-            Vertex(index, vertex.x, vertex.y)}
+        val reindexedEdgeList = updatedEdgeList.map {  edge ->
+            Edge(updatedEdgeList.indexOf(edge), edge.startId, edge.endId)}
+        val reindexedVertexList = updatedVertexList.map { vertex ->
+            Vertex(updatedVertexList.indexOf(vertex), vertex.x, vertex.y)}
 
 
         _uiState.value =
@@ -143,6 +172,52 @@ class GraphViewModel(
 
 
     }
+
+ */
+fun deleteVertex(id: Int) {
+    var currentUiState = _uiState.value.copy()
+    var updatedVertexList = currentUiState.vertexList.toMutableList()
+    var filteredEdgeList = currentUiState.edgeList.toMutableList()
+
+    if (id >= 0 && id < currentUiState.vertexList.size) {
+        /*updatedVertexList = updatedVertexList.filter { vertex -> vertex.id != id }
+            .toMutableList()
+
+         */
+        updatedVertexList.removeAt(id)
+
+        filteredEdgeList = filteredEdgeList.filter { edge ->
+                       edge.startId != id
+                    && edge.startId < currentUiState.vertexList.size
+                    && edge.endId != id
+                    && edge.endId <currentUiState.vertexList.size
+        }.map {edge ->
+            when {
+                edge.startId >= id && edge.endId >= id -> {
+                    edge.copy(startId = edge.startId - 1, endId = edge.endId - 1)
+                }
+                edge.startId >= id -> {
+                    edge.copy(startId = edge.startId - 1)
+                }
+                edge.endId >= id -> {
+                    edge.copy(endId = edge.endId - 1)
+                }
+                else -> {
+                    edge // 条件を満たさない場合はそのままのエッジを返す
+                }
+            }
+        }.toMutableList()
+    }
+
+    val reindexedEdgeList = filteredEdgeList.mapIndexed { index, edge ->
+        Edge(index, edge.startId, edge.endId)
+    }
+    val reindexedVertexList = updatedVertexList.mapIndexed { index, vertex ->
+        Vertex(index, vertex.x, vertex.y)
+    }
+
+    _uiState.value = currentUiState.copy(vertexList = reindexedVertexList, edgeList = reindexedEdgeList)
+}
 
     fun addNewEdge(start: Int, end: Int, directed: Boolean){
         var currentUiState = _uiState.value.copy()

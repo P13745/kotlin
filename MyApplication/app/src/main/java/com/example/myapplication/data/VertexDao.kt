@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface  VertexDao {
-    @Query("SELECT * FROM vertex")
+    @Query("SELECT * FROM vertex ")
     fun getAll(): Flow<List<Vertex>>
 
     @Delete
@@ -23,15 +23,11 @@ interface  VertexDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(vertex: List<Vertex>)
 
+    @Query("DELETE FROM vertex") // すべてのデータを削除するクエリ
+    suspend fun deleteAll()
 
-/*
-    @Query("CREATE TABLE IF NOT EXISTS vertex (" +
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            "x REAL NOT NULL, " +
-            "y REAL NOT NULL)")
-    suspend fun createTable()
 
- */
+
 
 
 }

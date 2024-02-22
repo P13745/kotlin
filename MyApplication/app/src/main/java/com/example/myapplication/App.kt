@@ -1,19 +1,32 @@
 package com.example.myapplication
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myapplication.data.Edge
 import com.example.myapplication.data.GraphDatabase
 import com.example.myapplication.data.EdgeViewModel
+import com.example.myapplication.data.Vertex
 import com.example.myapplication.data.VertexViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -28,8 +41,33 @@ fun GraphApp(
 
 
 
+
+    var loadingOrSaving by remember { mutableStateOf(false) }
+
+
+
     //val edgeList by graphViewModel.edgeList
     Column(modifier = Modifier.fillMaxSize()) {
+        GraphTopBar(
+            loadAction =  {
+                loadingOrSaving = true
+                graphViewModel.load(vertexList, edgeList)
+                loadingOrSaving = false
+                          },
+            saveAction = {
+                CoroutineScope(Dispatchers.Main).launch {
+                    loadingOrSaving = true
+                    edgeViewModel.deletAllEdge()
+                    vertexViewModel.deletAllVertex()
+                    vertexViewModel.insertAllVertex(uiState.vertexList)
+                    edgeViewModel.insertAllEdge(uiState.edgeList)
+                    loadingOrSaving = false
+                }
+
+            }
+
+        )
+
         Box(modifier = Modifier
             .fillMaxWidth()
             .weight(1f)
@@ -48,11 +86,7 @@ fun GraphApp(
             EditTable(
                 uiState = uiState,
                 addVertex = { graphViewModel.addNewVertex() },
-                deleteVertex = { //indexを取得、見つからなければ-1を返す*/
-                    val index = uiState.vertexList.indexOfFirst { vertex ->
-                        vertex.x == it.first && vertex.y == it.second }
-                    graphViewModel.deleteVertex(index)
-                               },
+                deleteVertex = { graphViewModel.deleteVertex(it) },
                 addEdge = { (start, end) ->
                     graphViewModel.addNewEdge(
                         start,
@@ -71,10 +105,42 @@ fun GraphApp(
                 movingSpeed = uiState.movingSpeed,
                 startQuery = uiState.startQuery,
                 endQuery  = uiState.endQuery,
-                directed = uiState.directed
+                directed = uiState.directed,
+                loadingOrSaving = loadingOrSaving
             )
         }
         
+    }
+
+}
+
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GraphTopBar(
+    loadAction: () -> Unit,
+    saveAction: () -> Unit,
+){
+    Box() {
+        CenterAlignedTopAppBar(
+            title = { Text("Graph application") }
+        )
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+        ){
+            Button(
+                content = { Text("Load") },
+                onClick = loadAction
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Button(
+                content = {Text("Save")},
+                onClick = saveAction
+            )
+
+        }
     }
 
 }

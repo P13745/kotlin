@@ -67,14 +67,25 @@ fun VertexAndEdgeFromList(
         }
 
         edgeList.forEach { edge ->
-            val startVertex = vertexList[edge.startId]
-            val endVertex = vertexList[edge.endId]
-            drawLine(
-                color = Color.Black,
-                start = Offset(startVertex.x, startVertex.y),
-                end = Offset(endVertex.x, endVertex.y),
-                strokeWidth = 2f
-            )
+
+
+            if(
+                edge.startId >= 0
+                && edge.startId < vertexList.size
+                && edge.endId >=0
+                && edge.endId < vertexList.size) {
+                val startVertex = vertexList[edge.startId]
+                val endVertex = vertexList[edge.endId]
+
+                drawLine(
+                    color = Color.Black,
+                    start = Offset(startVertex.x, startVertex.y),
+                    end = Offset(endVertex.x, endVertex.y),
+                    strokeWidth = 2f
+                )
+            }
+
+
         }
     }
 }
@@ -87,7 +98,7 @@ fun VertexAndEdgeFromList(
 fun EditTable(
     uiState: UiState,
     addVertex: ()->Unit,
-    deleteVertex: (Pair<Float,Float>) -> Unit,
+    deleteVertex: (Int) -> Unit,
     addEdge: (Pair<Int, Int>) ->Unit,
     deleteEdge: (Pair<Int, Int>) -> Unit,
     onValueChangeOfStart: (Int?) -> Unit,
@@ -96,7 +107,8 @@ fun EditTable(
     movingSpeed: Float,
     startQuery: Int?,
     endQuery: Int?,
-    directed: Boolean
+    directed: Boolean,
+    loadingOrSaving: Boolean
 ){
     Row(modifier = Modifier.fillMaxWidth()){
 
@@ -106,6 +118,7 @@ fun EditTable(
             deleteVertex = deleteVertex,
             move = move,
             movingSpeed = movingSpeed,
+            loadingOrSaving = loadingOrSaving
         )
 
         //Divider()
@@ -119,7 +132,8 @@ fun EditTable(
             onValueChangeOfEnd = onValueChangeOfEnd,
             startQuery = startQuery,
             endQuery = endQuery,
-            directed = directed
+            directed = directed,
+            loadingOrSaving = loadingOrSaving
         )
 
     }
@@ -131,9 +145,10 @@ fun EditTable(
 fun EditVertex(
     uiState: UiState,
     addVertex: ()->Unit,
-    deleteVertex: (Pair<Float,Float>) -> Unit,
+    deleteVertex: (Int) -> Unit,
     move: (id: Int, direction: String, distance: Float) ->Unit,
     movingSpeed: Float,
+    loadingOrSaving: Boolean
 ) {
     val vertexList = uiState.vertexList
 
@@ -157,6 +172,7 @@ fun EditVertex(
                     id = id,
                     move = move,
                     movingSpeed = movingSpeed,
+                    loadingOrSaving = loadingOrSaving
                 )
 
             }
@@ -176,10 +192,11 @@ fun EditVertex(
 @Composable
 fun EachVertex(
     vertex: Vertex,
-    deleteVertex: (Pair<Float,Float>) -> Unit,
+    deleteVertex: (Int) -> Unit,
     id: Int,
     move: (id: Int, direction: String, distance: Float) ->Unit,
     movingSpeed: Float,
+    loadingOrSaving: Boolean
 ){
 
     Card(){
@@ -198,7 +215,8 @@ fun EachVertex(
                 Button(
                     modifier = Modifier.height(32.dp),
                     onClick = { move(id,"UP", movingSpeed) },
-                    content = { Text("↑") }
+                    content = { Text("↑") },
+                    enabled = !loadingOrSaving
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -209,28 +227,32 @@ fun EachVertex(
                             .height(32.dp)
                             .width(60.dp),
                         onClick = { move(id,"LEFT", movingSpeed) },
-                        content = { Text("←") }
+                        content = { Text("←") },
+                        enabled = !loadingOrSaving
                     )
                     Button(
                         modifier = Modifier
                             .height(32.dp)
                             .width(60.dp),
                         onClick = { move(id,"RIGHT", movingSpeed) },
-                        content = { Text("→") }
+                        content = { Text("→") },
+                        enabled = !loadingOrSaving
                     )
                 }
                 Button(
                     modifier = Modifier.height(32.dp),
                     onClick = { move(id,"DOWN", movingSpeed) },
-                    content = { Text("↓") }
+                    content = { Text("↓") },
+                    enabled = !loadingOrSaving
                 )
 
             }
 
 
             Button(
-                onClick = { deleteVertex(Pair(vertex.x, vertex.y)) },
-                content = { Text("Delete") }
+                onClick = { deleteVertex(id) },//====================
+                content = { Text("Delete") },
+                enabled = !loadingOrSaving
             )
 
 
@@ -251,7 +273,8 @@ fun EditEdge(
     onValueChangeOfEnd: (Int?) -> Unit,
     startQuery: Int?,
     endQuery: Int?,
-    directed: Boolean
+    directed: Boolean,
+    loadingOrSaving: Boolean
 ) {
 
 
@@ -273,7 +296,8 @@ fun EditEdge(
             ) { edge ->
                 EachEdge(
                     edge = edge,
-                    deleteEdge = deleteEdge
+                    deleteEdge = deleteEdge,
+                    loadingOrSaving = loadingOrSaving
                 )
             }
 
@@ -300,7 +324,7 @@ fun EditEdge(
                                 .width(72.dp)
                                 .height(64.dp),
                             label = { Text(text = "Start") },
-                            isError = ( startQuery==null ) || (startQuery <= 0)  && (startQuery == endQuery) &&(startQuery > uiState.vertexList.size),
+                            isError = ( startQuery == null ) || (startQuery <= 0)  && (startQuery == endQuery) &&(startQuery > uiState.vertexList.size),
                             keyboardOptions = KeyboardOptions.Default.copy(
                                 imeAction = ImeAction.Next,
                                 keyboardType = KeyboardType.Number
@@ -340,7 +364,8 @@ fun EditEdge(
                     }
 
                     Button(
-                        enabled = (uiState.startQuery != null) && (uiState.endQuery != null)
+                        enabled = !loadingOrSaving
+                                &&(uiState.startQuery != null) && (uiState.endQuery != null)
                                 &&(uiState.startQuery > 0) && (uiState.endQuery > 0)
                                 && (uiState.startQuery <= uiState.vertexList.size)
                                 && (uiState.endQuery <= uiState.vertexList.size)
@@ -391,6 +416,7 @@ fun EditEdge(
 fun EachEdge(
     edge: Edge,
     deleteEdge: (Pair<Int, Int>) -> Unit,
+    loadingOrSaving: Boolean
 ){
 
     Card(){
@@ -401,7 +427,8 @@ fun EachEdge(
            Text(text= (edge.startId + 1).toString() + " - " + (edge.endId + 1).toString())
            Button(
                onClick = {  deleteEdge( Pair(edge.startId, edge.endId)) },
-               content = { Text("Delete") }
+               content = { Text("Delete") },
+               enabled = !loadingOrSaving
            )
 
        }
@@ -430,7 +457,8 @@ fun previewEditTable() {
         movingSpeed =10f,
         startQuery = 1,
         endQuery =1,
-        directed = false
+        directed = false,
+        loadingOrSaving = false
     )
 }
 
