@@ -11,3 +11,15 @@ data class Vertex(
     @ColumnInfo(name = "x") val x: Float,
     @ColumnInfo(name = "y") val y: Float,
 )
+@Entity(tableName = "vertex2")
+data class Vertex2(
+    @PrimaryKey(autoGenerate = true) val id: Int,
+    @ColumnInfo(name = "x") val x: Float,
+    @ColumnInfo(name = "y") val y: Float,
+)
+@Entity(tableName = "vertex3")
+data class Vertex3(
+    @PrimaryKey(autoGenerate = true) val id: Int,
+    @ColumnInfo(name = "x") val x: Float,
+    @ColumnInfo(name = "y") val y: Float,
+)

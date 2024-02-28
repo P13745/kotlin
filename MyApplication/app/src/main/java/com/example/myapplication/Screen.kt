@@ -1,25 +1,38 @@
 package com.example.myapplication
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -30,9 +43,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.data.Edge
 import com.example.myapplication.data.Vertex
@@ -108,36 +125,185 @@ fun EditTable(
     startQuery: Int?,
     endQuery: Int?,
     directed: Boolean,
-    loadingOrSaving: Boolean
+    loadingOrSaving: Boolean,
+    modeChange: (String) -> Unit,
+    loadAction: () -> Unit,
+    saveAction: () -> Unit,
+    loadAction2: () -> Unit,
+    saveAction2: () -> Unit,
+    loadAction3: () -> Unit,
+    saveAction3: () -> Unit,
+    emptyOrNot : Boolean,
+    emptyOrNot2 : Boolean,
+    emptyOrNot3 : Boolean,
 ){
-    Row(modifier = Modifier.fillMaxWidth()){
-
-        EditVertex(
-            uiState = uiState,
-            addVertex = addVertex,
-            deleteVertex = deleteVertex,
-            move = move,
-            movingSpeed = movingSpeed,
-            loadingOrSaving = loadingOrSaving
-        )
-
-        //Divider()
 
 
-        EditEdge(
-            uiState = uiState,
-            addEdge = addEdge,
-            deleteEdge = deleteEdge,
-            onValueChangeOfStart = onValueChangeOfStart,
-            onValueChangeOfEnd = onValueChangeOfEnd,
-            startQuery = startQuery,
-            endQuery = endQuery,
-            directed = directed,
-            loadingOrSaving = loadingOrSaving
-        )
+    Column() {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            Button(
+                onClick = { modeChange("Vertex") },
+                content = { Text("Vertex") }
+            )
+            Button(
+                onClick = { modeChange("Edge") },
+                content = { Text("Edge") }
+            )
+            Button(
+                onClick = { modeChange("Save/Load") },
+                content = { Text("Save/Load") }
+            )
+
+
+        }
+
+        if(uiState.mode == "Vertex") {
+            EditVertex(
+                uiState = uiState,
+                addVertex = addVertex,
+                deleteVertex = deleteVertex,
+                move = move,
+                movingSpeed = movingSpeed,
+                loadingOrSaving = loadingOrSaving
+            )
+        }
+
+        if(uiState.mode == "Edge") {
+            EditEdge(
+                uiState = uiState,
+                addEdge = addEdge,
+                deleteEdge = deleteEdge,
+                onValueChangeOfStart = onValueChangeOfStart,
+                onValueChangeOfEnd = onValueChangeOfEnd,
+                startQuery = startQuery,
+                endQuery = endQuery,
+                directed = directed,
+                loadingOrSaving = loadingOrSaving
+            )
+        }
+
+        if(uiState.mode == "Save/Load") {
+            SaveLoadScreen(
+                loadAction = loadAction,
+                saveAction = saveAction,
+                loadAction2 = loadAction2,
+                saveAction2 = saveAction2,
+                loadAction3 = loadAction3,
+                saveAction3 = saveAction3,
+                modeChange = modeChange,
+                emptyOrNot = emptyOrNot,
+                emptyOrNot2 = emptyOrNot2,
+                emptyOrNot3 = emptyOrNot3,
+                loadingOrSaving = loadingOrSaving,
+
+            )
+        }
+
+
 
     }
+
 }
+
+@Composable
+fun SaveLoadScreen(
+    loadAction: () -> Unit,
+    saveAction: () -> Unit,
+    loadAction2: () -> Unit,
+    saveAction2: () -> Unit,
+    loadAction3: () -> Unit,
+    saveAction3: () -> Unit,
+    modeChange: (String) -> Unit,
+    emptyOrNot : Boolean,
+    emptyOrNot2 : Boolean,
+    emptyOrNot3 : Boolean,
+    loadingOrSaving: Boolean
+){
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.SpaceBetween
+    ){
+        Card() {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(90.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Save slot 1")
+                Button(
+                    content = { Text("Load") },
+                    onClick = loadAction,
+                    enabled = !loadingOrSaving && !emptyOrNot
+                )
+
+                Button(
+                    content = { Text("Save") },
+                    onClick = saveAction,
+                    enabled = !loadingOrSaving
+                )
+            }
+        }
+        Spacer(Modifier.height(4.dp))
+        Card() {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(90.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Save slot 2")
+                Button(
+                    content = { Text("Load") },
+                    onClick = loadAction2,
+                    enabled = !loadingOrSaving && !emptyOrNot2
+                )
+
+                Button(
+                    content = { Text("Save") },
+                    onClick = saveAction2,
+                    enabled = !loadingOrSaving
+                )
+            }
+        }
+        Spacer(Modifier.height(4.dp))
+        Card() {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(90.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Save slot 3")
+                Button(
+                    content = { Text("Load") },
+                    onClick = loadAction3,
+                    enabled = !loadingOrSaving && !emptyOrNot3
+                )
+
+                Button(
+                    content = { Text("Save") },
+                    onClick = saveAction3,
+                    enabled = !loadingOrSaving
+                )
+            }
+        }
+
+
+
+
+    }
+
+}
+
 
 
 
@@ -174,6 +340,7 @@ fun EditVertex(
                     movingSpeed = movingSpeed,
                     loadingOrSaving = loadingOrSaving
                 )
+                Spacer(Modifier.height(4.dp))
 
             }
             item() {
@@ -196,14 +363,16 @@ fun EachVertex(
     id: Int,
     move: (id: Int, direction: String, distance: Float) ->Unit,
     movingSpeed: Float,
-    loadingOrSaving: Boolean
+    loadingOrSaving: Boolean,
 ){
 
-    Card(){
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+    ){
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier
+            modifier = Modifier.fillMaxWidth()
         ){
             Text( (id + 1).toString())
 
@@ -274,7 +443,7 @@ fun EditEdge(
     startQuery: Int?,
     endQuery: Int?,
     directed: Boolean,
-    loadingOrSaving: Boolean
+    loadingOrSaving: Boolean,
 ) {
 
 
@@ -292,13 +461,14 @@ fun EditEdge(
 
 
             items(items = edgeList,
-                key = { edge -> (edge.hashCode() to "e") }
+                key = { edge -> edge.id }
             ) { edge ->
                 EachEdge(
                     edge = edge,
                     deleteEdge = deleteEdge,
                     loadingOrSaving = loadingOrSaving
                 )
+                Spacer(Modifier.height(4.dp))
             }
 
             item() {
@@ -306,6 +476,7 @@ fun EditEdge(
 
                 Column() {
                     Row() {
+
 
 
                         val keyboardController = LocalSoftwareKeyboardController.current
@@ -361,6 +532,51 @@ fun EditEdge(
                                 }
                             )
                         )
+
+
+
+                    }
+
+                    Box() {
+                        var selectedItem by remember { mutableStateOf<String?>(null) }
+                        var expanded by remember { mutableStateOf(false) }
+
+                        Button(
+                            onClick = { expanded = true },
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .height(40.dp)
+                                .width(70.dp)
+                                .background(Color.White)
+                                .border(1.dp, Color.Black, RoundedCornerShape(4.dp)),
+                            colors = ButtonDefaults.textButtonColors(contentColor = Color.Black),
+                        ) {
+                            Text(
+                                startQuery?.toString() ?: "start",
+                                textAlign = TextAlign.Center,
+                                overflow = TextOverflow.Clip
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            modifier = Modifier.background(Color.White),
+                            offset = DpOffset(0.dp, 0.dp),
+                            properties = PopupProperties(focusable = true)
+                        ) {
+                            // 選択肢をリストする
+                            uiState.vertexList.forEach { vertex ->
+                                DropdownMenuItem(
+                                    onClick = {
+                                        selectedItem = "${vertex.id + 1}"
+                                        expanded = false
+                                        onValueChangeOfStart(vertex.id + 1)
+                                    },
+                                    text = { Text("${vertex.id + 1}") }
+                                )
+                            }
+                        }
                     }
 
                     Button(
@@ -458,7 +674,17 @@ fun previewEditTable() {
         startQuery = 1,
         endQuery =1,
         directed = false,
-        loadingOrSaving = false
+        loadingOrSaving = false ,
+        modeChange = {},
+        loadAction = {},
+        saveAction = {},
+        loadAction2 = {},
+        saveAction2 = {},
+        loadAction3 = {},
+        saveAction3 = {},
+        emptyOrNot = false,
+        emptyOrNot2 = false,
+        emptyOrNot3 = false,
     )
 }
 

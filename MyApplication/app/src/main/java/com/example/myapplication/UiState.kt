@@ -1,17 +1,11 @@
 package com.example.myapplication
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.Edge
-import com.example.myapplication.data.EdgeViewModel
-//import com.example.myapplication.data.EdgeViewModel
 import com.example.myapplication.data.Vertex
-import com.example.myapplication.data.VertexViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.launch
 import java.lang.Math.random
 
 const val YMax = 1000f
@@ -42,7 +36,8 @@ data class UiState(
     val startQuery: Int? = null,
     val endQuery: Int? = null,
     val movingSpeed: Float = 50f,
-    val directed: Boolean = false
+    val directed: Boolean = false,
+    val mode: String = "Vertex"
 )
 
 class GraphViewModel(
@@ -77,14 +72,15 @@ class GraphViewModel(
 
 
     fun load(vertexList: List<Vertex>, edgeList: List<Edge>){
-        var currentUiState = _uiState.value.copy()
-        _uiState.value = currentUiState.copy(vertexList = vertexList, edgeList = edgeList)
+        //var currentUiState = _uiState.value.copy()
+        //_uiState.value = currentUiState.copy(vertexList = vertexList, edgeList = edgeList)
+        _uiState.value = _uiState.value.copy(vertexList = vertexList, edgeList = edgeList)
 
     }
 
 
     fun moveVertex(id: Int, direction: String, distance: Float) {
-        var currentUiState = _uiState.value.copy()
+        val currentUiState = _uiState.value.copy()
         if (currentUiState.vertexList.size > id && id >= 0) {
             var X = currentUiState.vertexList[id].x
             var Y = currentUiState.vertexList[id].y
@@ -98,7 +94,7 @@ class GraphViewModel(
             X = X.coerceIn(XMin, XMax) // XMinとXMaxの間に収める
             Y = Y.coerceIn(YMin, YMax) // YMinとYMaxの間に収める
 
-            var updatedVertexList = currentUiState.vertexList.toMutableList()
+            val updatedVertexList = currentUiState.vertexList.toMutableList()
             updatedVertexList[id] = updatedVertexList[id].copy(x = X, y = Y)
 
             _uiState.value = currentUiState.copy(vertexList = updatedVertexList)
@@ -107,8 +103,8 @@ class GraphViewModel(
     }
 
     fun addNewVertex() {
-        var currentUiState = _uiState.value.copy()
-        var updatedVertexList = currentUiState.vertexList.toMutableList()
+        val currentUiState = _uiState.value.copy()
+        val updatedVertexList = currentUiState.vertexList.toMutableList()
 
         val randomX = XMin + (XMax - XMin) * random().toFloat()
         val randomY = YMin + (YMax - YMin) * random().toFloat()
@@ -119,71 +115,14 @@ class GraphViewModel(
 
     }
 
-/*
-    fun deleteVertex(id: Int) {
-        var currentUiState = _uiState.value.copy()
-        var updatedVertexList = currentUiState.vertexList.toMutableList()
-        var updatedEdgeList = currentUiState.edgeList.toMutableList()
 
-        if (id >= 0 && id < currentUiState.vertexList.size) {
-            // updatedVertexList.removeAt(id)
-            updatedVertexList = updatedVertexList.filter {vertex -> vertex.id != id}
-                .toMutableList()
-
-
-            updatedEdgeList = updatedEdgeList.filter { edge -> edge.startId != id && edge.endId != id }
-                    .toMutableList()
-
-
-
-/*
-            updatedEdgeList = updatedEdgeList.map { edge ->
-                if (edge.startId > id) {
-                    edge.copy(startId = edge.startId - 1)
-                }
-                if (edge.endId > id) {
-                    edge.copy(endId = edge.endId - 1)
-                }
-                edge
-            }.toMutableList()
-
- */
-
-            updatedEdgeList.forEachIndexed { index, edge ->
-                if (edge.startId > id) {
-                    updatedEdgeList[index] = edge.copy(startId = edge.startId - 1)
-                }
-                if (edge.endId > id) {
-                    updatedEdgeList[index] = edge.copy(endId = edge.endId - 1)
-                }
-            }
-
-
-        }
-
-        val reindexedEdgeList = updatedEdgeList.map {  edge ->
-            Edge(updatedEdgeList.indexOf(edge), edge.startId, edge.endId)}
-        val reindexedVertexList = updatedVertexList.map { vertex ->
-            Vertex(updatedVertexList.indexOf(vertex), vertex.x, vertex.y)}
-
-
-        _uiState.value =
-            currentUiState.copy(vertexList = reindexedVertexList, edgeList = reindexedEdgeList)
-
-
-    }
-
- */
 fun deleteVertex(id: Int) {
-    var currentUiState = _uiState.value.copy()
-    var updatedVertexList = currentUiState.vertexList.toMutableList()
+    val currentUiState = _uiState.value.copy()
+    val updatedVertexList = currentUiState.vertexList.toMutableList()
     var filteredEdgeList = currentUiState.edgeList.toMutableList()
 
     if (id >= 0 && id < currentUiState.vertexList.size) {
-        /*updatedVertexList = updatedVertexList.filter { vertex -> vertex.id != id }
-            .toMutableList()
 
-         */
         updatedVertexList.removeAt(id)
 
         filteredEdgeList = filteredEdgeList.filter { edge ->
@@ -220,9 +159,9 @@ fun deleteVertex(id: Int) {
 }
 
     fun addNewEdge(start: Int, end: Int, directed: Boolean){
-        var currentUiState = _uiState.value.copy()
-        var updatedEdgeList = currentUiState.edgeList.toMutableList()
-        var updatedVertexList = currentUiState.vertexList.toMutableList()
+        val currentUiState = _uiState.value.copy()
+        val updatedEdgeList = currentUiState.edgeList.toMutableList()
+        val updatedVertexList = currentUiState.vertexList.toMutableList()
 
         if (start >= 0
             && end >= 0
@@ -241,7 +180,7 @@ fun deleteVertex(id: Int) {
     }
 
     fun deleteEdge(selectedEdge: Pair<Int,Int>, directed: Boolean){
-        var currentUiState = _uiState.value.copy()
+        val currentUiState = _uiState.value.copy()
         var updatedEdgeList = currentUiState.edgeList.toMutableList()
 
         updatedEdgeList =
@@ -257,20 +196,22 @@ fun deleteVertex(id: Int) {
 
     }
 
-    //var nowStartQuery by mutableStateOf(0)
-      //  private set
+
+    fun updateMode(mode: String){
+        _uiState.value = _uiState.value.copy(mode = mode)
+    }
+
     fun updateStartQuery(query: Int?){
-        //nowStartQuery = query ?: 0
+
         _uiState.value = _uiState.value.copy(startQuery = query)
     }
 
 
 
 
-    //var nowEndQuery by mutableStateOf(0)
-      //  private set
+
     fun updateEndQuery(query: Int?){
-        //nowEndQuery = query ?: 0
+
         _uiState.value = _uiState.value.copy(endQuery = query)
     }
 

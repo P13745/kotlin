@@ -8,16 +8,4 @@ class GraphApplication: Application()/*, ViewModelStoreOwner */{
         GraphDatabase.getDatabase(this)
     }
 
-
-    //val graphViewModel: GraphViewModel by lazy { ViewModelProvider(this).get(GraphViewModel::class.java) }
-
-
-/*
-    override fun onCreate() {
-        super.onCreate()
-        // データベースからのデータ読み取りを開始
-        GraphDatabase.getDatabase(this)
-    }
-
- */
 }

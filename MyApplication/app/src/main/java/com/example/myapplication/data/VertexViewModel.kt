@@ -29,7 +29,7 @@ class VertexViewModel(private val vertexDao: VertexDao): ViewModel() {
         }
     }
 
-    suspend fun deletAllVertex(): Unit = vertexDao.deleteAll()
+    suspend fun deleteAllVertex(): Unit = vertexDao.deleteAll()
 
     suspend fun insertAllVertex(vertexList: List<Vertex>): Unit = vertexDao.insertAll(vertexList)
 
@@ -43,6 +43,68 @@ class VertexViewModel(private val vertexDao: VertexDao): ViewModel() {
             initializer {
                 val application = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as GraphApplication)
                 VertexViewModel(application.database.vertexDao())
+            }
+        }
+    }
+}
+
+class VertexViewModel2(private val vertexDao2: VertexDao2): ViewModel() {
+
+    fun getFullVertex2(): Flow<List<Vertex2>>  {
+        return vertexDao2.getAll2().map { vertexList ->
+            if (vertexList.isEmpty()) return@map emptyList()
+
+            //==================================================================
+            val mutableList = vertexList.toMutableList()
+            val lastElement = mutableList.removeAt(mutableList.size - 1)
+            mutableList.add(0, lastElement)
+            //==================================================================
+
+            mutableList.mapIndexed { index, vertex ->
+                vertex.copy(id = index )        ///??????????????????
+            }
+        }
+    }
+
+    suspend fun deleteAllVertex2(): Unit = vertexDao2.deleteAll2()
+    suspend fun insertAllVertex2(vertexList2: List<Vertex2>): Unit = vertexDao2.insertAll2(vertexList2)
+
+    companion object {
+        val factory : ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val application = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as GraphApplication)
+                VertexViewModel2(application.database.vertexDao2())
+            }
+        }
+    }
+}
+
+class VertexViewModel3(private val vertexDao3: VertexDao3): ViewModel() {
+
+    fun getFullVertex3(): Flow<List<Vertex3>>  {
+        return vertexDao3.getAll3().map { vertexList ->
+            if (vertexList.isEmpty()) return@map emptyList()
+
+            //==================================================================
+            val mutableList = vertexList.toMutableList()
+            val lastElement = mutableList.removeAt(mutableList.size - 1)
+            mutableList.add(0, lastElement)
+            //==================================================================
+
+            mutableList.mapIndexed { index, vertex ->
+                vertex.copy(id = index )        ///??????????????????
+            }
+        }
+    }
+
+    suspend fun deleteAllVertex3(): Unit = vertexDao3.deleteAll3()
+    suspend fun insertAllVertex3(vertexList3: List<Vertex3>): Unit = vertexDao3.insertAll3(vertexList3)
+
+    companion object {
+        val factory : ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val application = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as GraphApplication)
+                VertexViewModel3(application.database.vertexDao3())
             }
         }
     }
