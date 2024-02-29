@@ -3,6 +3,7 @@ package com.example.myapplication
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -162,49 +164,88 @@ fun EditTable(
 
         }
 
-        if(uiState.mode == "Vertex") {
-            EditVertex(
-                uiState = uiState,
-                addVertex = addVertex,
-                deleteVertex = deleteVertex,
-                move = move,
-                movingSpeed = movingSpeed,
-                loadingOrSaving = loadingOrSaving
-            )
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+
+            if (uiState.mode == "Vertex" ) {
+
+                VertexList(
+                    uiState = uiState,
+                    deleteVertex = deleteVertex,
+                    move = move,
+                    movingSpeed = movingSpeed,
+                    loadingOrSaving = loadingOrSaving,
+                )
+
+                Button(
+                    modifier = Modifier.align(Alignment.BottomEnd),
+                    onClick = { modeChange("Edit vertex") },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = MaterialTheme.colorScheme.onSecondary
+                    ),
+                    content = { Text("+ Edit vertex") },
+                    shape = RoundedCornerShape(8.dp)
+                )
+            }
+            if(uiState.mode == "Edit vertex") {
+                EditVertex(
+                    addVertex = addVertex,
+                )
+            }
+
+
+
+            if (uiState.mode == "Edge") {
+                EdgeList(
+                    uiState = uiState,
+                    deleteEdge = deleteEdge,
+                    loadingOrSaving = loadingOrSaving
+                )
+                Button(
+                    modifier = Modifier.align(Alignment.BottomEnd),
+                    onClick = { modeChange("Edit edge") },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = MaterialTheme.colorScheme.onSecondary
+                    ),
+                    content = { Text("+ Edit edge") },
+                    shape = RoundedCornerShape(8.dp)
+                )
+            }
+
+            if(uiState.mode == "Edit edge") {
+                EditEdge(
+                    uiState = uiState,
+                    addEdge = addEdge,
+                    onValueChangeOfStart = onValueChangeOfStart,
+                    onValueChangeOfEnd = onValueChangeOfEnd,
+                    startQuery = startQuery,
+                    endQuery = endQuery,
+                    directed = directed,
+                    loadingOrSaving = loadingOrSaving
+                )
+            }
+
+
+            if (uiState.mode == "Save/Load") {
+                SaveLoadScreen(
+                    loadAction = loadAction,
+                    saveAction = saveAction,
+                    loadAction2 = loadAction2,
+                    saveAction2 = saveAction2,
+                    loadAction3 = loadAction3,
+                    saveAction3 = saveAction3,
+                    modeChange = modeChange,
+                    emptyOrNot = emptyOrNot,
+                    emptyOrNot2 = emptyOrNot2,
+                    emptyOrNot3 = emptyOrNot3,
+                    loadingOrSaving = loadingOrSaving,
+
+                    )
+            }
         }
-
-        if(uiState.mode == "Edge") {
-            EditEdge(
-                uiState = uiState,
-                addEdge = addEdge,
-                deleteEdge = deleteEdge,
-                onValueChangeOfStart = onValueChangeOfStart,
-                onValueChangeOfEnd = onValueChangeOfEnd,
-                startQuery = startQuery,
-                endQuery = endQuery,
-                directed = directed,
-                loadingOrSaving = loadingOrSaving
-            )
-        }
-
-        if(uiState.mode == "Save/Load") {
-            SaveLoadScreen(
-                loadAction = loadAction,
-                saveAction = saveAction,
-                loadAction2 = loadAction2,
-                saveAction2 = saveAction2,
-                loadAction3 = loadAction3,
-                saveAction3 = saveAction3,
-                modeChange = modeChange,
-                emptyOrNot = emptyOrNot,
-                emptyOrNot2 = emptyOrNot2,
-                emptyOrNot3 = emptyOrNot3,
-                loadingOrSaving = loadingOrSaving,
-
-            )
-        }
-
-
 
     }
 
@@ -231,8 +272,7 @@ fun SaveLoadScreen(
         Card() {
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(90.dp),
+                    .fillMaxSize(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -308,19 +348,20 @@ fun SaveLoadScreen(
 
 
 @Composable
-fun EditVertex(
+fun VertexList(
     uiState: UiState,
-    addVertex: ()->Unit,
     deleteVertex: (Int) -> Unit,
     move: (id: Int, direction: String, distance: Float) ->Unit,
     movingSpeed: Float,
-    loadingOrSaving: Boolean
+    loadingOrSaving: Boolean,
 ) {
     val vertexList = uiState.vertexList
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text = "Edit vertex",
+            text = "Vertex",
             fontSize = 20.sp
         )
         LazyColumn(
@@ -343,16 +384,91 @@ fun EditVertex(
                 Spacer(Modifier.height(4.dp))
 
             }
-            item() {
-                Button(
-                    onClick = addVertex,
-                    content = { Text("Add vertex") }
-                )
 
-            }
 
         }
     }
+}
+
+@Composable
+fun EditVertex(
+    addVertex: ()->Unit,
+){
+    Box(
+        modifier = Modifier
+            .background(
+                color = Color.Gray.copy(alpha = 0.5f)
+            )
+            .fillMaxSize()) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(30.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                var vertexNumber by remember { mutableStateOf(1) }
+
+
+                Box() {
+                    var expanded by remember { mutableStateOf(false) }
+
+                    Button(
+                        onClick = { expanded = true },
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .height(40.dp)
+                            .width(100.dp)
+                            .background(Color.White)
+                            .border(1.dp, Color.Black, RoundedCornerShape(4.dp)),
+                        colors = ButtonDefaults.textButtonColors(contentColor = Color.Black),
+                    ) {
+                        Text(
+                            vertexNumber.toString(),
+                            textAlign = TextAlign.Center,
+                            overflow = TextOverflow.Clip
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.background(Color.White),
+                        offset = DpOffset(0.dp, 0.dp),
+                        properties = PopupProperties(focusable = true)
+                    ) {
+                        // 選択肢をリストする
+                        (1..10).toList().forEach { n ->
+                            DropdownMenuItem(
+                                onClick = {
+                                    vertexNumber = n
+                                },
+                                text = { Text(n.toString()) }
+                            )
+                        }
+                    }
+                }
+
+                var clickCount by remember { mutableStateOf(0) }
+                clickCount = vertexNumber
+
+                Button(
+                    onClick = {
+                        repeat(clickCount) {
+                            addVertex()
+                        }
+                    },
+                    content = { Text("Add vertex") }
+                )
+            }
+        }
+    }
+
+
+
 }
 
 
@@ -431,13 +547,10 @@ fun EachVertex(
 
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun EditEdge(
     uiState: UiState,
     addEdge: (Pair<Int, Int>) ->Unit,
-    deleteEdge: (Pair<Int, Int>) -> Unit,
     onValueChangeOfStart: (Int?) -> Unit,
     onValueChangeOfEnd: (Int?) -> Unit,
     startQuery: Int?,
@@ -446,12 +559,241 @@ fun EditEdge(
     loadingOrSaving: Boolean,
 ) {
 
+    Box(
+        modifier = Modifier
+        .background(
+            color = Color.Gray.copy(alpha = 0.5f) // 半透明の薄い灰色
+        )
+        .fillMaxSize()) {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+
+        ) {
+
+
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Box() {
+                    var selectedItem by remember { mutableStateOf<String?>(null) }
+                    var expanded by remember { mutableStateOf(false) }
+
+                    Button(
+                        onClick = { expanded = true },
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .height(40.dp)
+                            .width(100.dp)
+                            .background(Color.White)
+                            .border(1.dp, Color.Black, RoundedCornerShape(4.dp)),
+                        colors = ButtonDefaults.textButtonColors(contentColor = Color.Black),
+                    ) {
+                        Text(
+                            startQuery?.toString() ?: "start",
+                            textAlign = TextAlign.Center,
+                            overflow = TextOverflow.Clip
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.background(Color.White),
+                        offset = DpOffset(0.dp, 0.dp),
+                        properties = PopupProperties(focusable = true)
+                    ) {
+                        // 選択肢をリストする
+                        uiState.vertexList.forEach { vertex ->
+                            DropdownMenuItem(
+                                onClick = {
+                                    selectedItem = "${vertex.id + 1}"
+                                    expanded = false
+                                    onValueChangeOfStart(vertex.id + 1)
+                                },
+                                text = { Text("${vertex.id + 1}") }
+                            )
+                        }
+                    }
+                }
+
+                Text("-")
+
+                Box() {
+                    var selectedItem by remember { mutableStateOf<String?>(null) }
+                    var expanded by remember { mutableStateOf(false) }
+
+                    Button(
+                        onClick = { expanded = true },
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .height(40.dp)
+                            .width(100.dp)
+                            .background(Color.White)
+                            .border(1.dp, Color.Black, RoundedCornerShape(4.dp)),
+                        colors = ButtonDefaults.textButtonColors(contentColor = Color.Black),
+                    ) {
+                        Text(
+                            endQuery?.toString() ?: "end",
+                            textAlign = TextAlign.Center,
+                            overflow = TextOverflow.Clip
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.background(Color.White),
+                        offset = DpOffset(0.dp, 0.dp),
+                        properties = PopupProperties(focusable = true)
+                    ) {
+                        // 選択肢をリストする
+                        uiState.vertexList.forEach { vertex ->
+                            DropdownMenuItem(
+                                onClick = {
+                                    selectedItem = "${vertex.id + 1}"
+                                    expanded = false
+                                    onValueChangeOfEnd(vertex.id + 1)
+                                },
+                                text = { Text("${vertex.id + 1}") }
+                            )
+                        }
+                    }
+                }
+
+            }
+
+            var enabled by remember { mutableStateOf(false) }
+            enabled = !loadingOrSaving
+                    && (uiState.startQuery != null) && (uiState.endQuery != null)
+                    && (uiState.startQuery > 0) && (uiState.endQuery > 0)
+                    && (uiState.startQuery <= uiState.vertexList.size)
+                    && (uiState.endQuery <= uiState.vertexList.size)
+                    && (uiState.endQuery != uiState.startQuery)
+                    && (uiState.edgeList.filter { edge ->
+                !(Pair(edge.startId, edge.endId) != Pair(
+                    uiState.startQuery - 1,
+                    uiState.endQuery - 1
+                )
+                        && (Pair(edge.endId, edge.startId) != Pair(
+                    uiState.startQuery - 1,
+                    uiState.endQuery - 1
+                ) || directed))
+            }.toMutableList().size == 0)
+
+            var showDialog by remember { mutableStateOf(false) }
+
+            Button(
+                onClick = {
+                    if (enabled) {
+                        if ((uiState.startQuery != null) && (uiState.endQuery != null)) {
+                            addEdge(uiState.endQuery - 1 to uiState.startQuery - 1)
+                        }
+                        onValueChangeOfStart(null)
+                        onValueChangeOfEnd(null)
+                    } else {
+                        showDialog = true
+                    }
+                },
+                content = { Text("Add vertex") }
+            )
+            if ((uiState.startQuery != null) && (uiState.endQuery != null)
+                && (uiState.edgeList.filter { edge ->
+                    !(Pair(edge.startId, edge.endId) != Pair(
+                        uiState.startQuery - 1,
+                        uiState.endQuery - 1
+                    )
+                            && (Pair(edge.endId, edge.startId) != Pair(
+                        uiState.startQuery - 1,
+                        uiState.endQuery - 1
+                    ) || directed))
+                }.toMutableList().size > 0)
+            ) {
+                Text("The edge already exists (directed? : ${uiState.directed})")
+            }
+            if ((uiState.endQuery != null) && (uiState.endQuery == uiState.startQuery)) {
+                Text("Start and End must be different")
+            }
+            if ((uiState.startQuery != null) && ((uiState.startQuery <= 0) || (uiState.startQuery > uiState.vertexList.size))) {
+                Text("Start should be selected from the corresponding vertex range")
+            }
+            if ((uiState.endQuery != null) && ((uiState.endQuery <= 0) || (uiState.endQuery > uiState.vertexList.size))) {
+                Text("End should be selected from the corresponding vertex range")
+            }
+
+
+            if (showDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDialog = false },
+                    title = { Text("Alert") },
+                    text = {
+                        Column {
+                            if(uiState.startQuery == null){
+                                Text("'Start' must be entered")
+                            }
+                            if(uiState.endQuery == null){
+                                Text("'End' must be entered")
+                            }
+                            if ((uiState.startQuery != null) && (uiState.endQuery != null)
+                                && (uiState.edgeList.filter { edge ->
+                                    !(Pair(edge.startId, edge.endId) != Pair(
+                                        uiState.startQuery - 1,
+                                        uiState.endQuery - 1
+                                    )
+                                            && (Pair(edge.endId, edge.startId) != Pair(
+                                        uiState.startQuery - 1,
+                                        uiState.endQuery - 1
+                                    ) || directed))
+                                }.toMutableList().size > 0)
+                            ) {
+                                Text("The edge already exists (directed? : ${uiState.directed})")
+                            }
+                            if ((uiState.endQuery != null) && (uiState.endQuery == uiState.startQuery)) {
+                                Text("'Start' and 'End' must be different")
+                            }
+                            if ((uiState.startQuery != null) && ((uiState.startQuery <= 0) || (uiState.startQuery > uiState.vertexList.size))) {
+                                Text("'Start' should be selected from the corresponding vertex range")
+                            }
+                            if ((uiState.endQuery != null) && ((uiState.endQuery <= 0) || (uiState.endQuery > uiState.vertexList.size))) {
+                                Text("'End' should be selected from the corresponding vertex range")
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = { showDialog = false },
+                            colors = ButtonDefaults.buttonColors()
+                        ) {
+                            Text("OK")
+                        }
+                    }
+                )
+            }
+
+
+        }
+    }
+}
+
+
+
+@Composable
+fun EdgeList(
+    uiState: UiState,
+    deleteEdge: (Pair<Int, Int>) -> Unit,
+    loadingOrSaving: Boolean,
+) {
+
 
     val edgeList = uiState.edgeList
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
         Text(
-            text = "Edit edge",
+            text = "Edge",
             fontSize = 20.sp
         )
 
@@ -471,162 +813,12 @@ fun EditEdge(
                 Spacer(Modifier.height(4.dp))
             }
 
-            item() {
-
-
-                Column() {
-                    Row() {
-
-
-
-                        val keyboardController = LocalSoftwareKeyboardController.current
-                        OutlinedTextField(
-                            value = startQuery?.toString() ?: "",
-                            onValueChange = { newValue: String ->
-                                if(newValue == ""){onValueChangeOfStart(null)}
-                                if (newValue.isNotEmpty() && newValue.all { it.isDigit() }) {
-                                    val newStartQuery =  newValue.toInt()
-                                    onValueChangeOfStart(newStartQuery)
-                                }
-                            },
-                            singleLine = true,
-                            shape = MaterialTheme.shapes.large,
-                            modifier = Modifier
-                                .width(72.dp)
-                                .height(64.dp),
-                            label = { Text(text = "Start") },
-                            isError = ( startQuery == null ) || (startQuery <= 0)  && (startQuery == endQuery) &&(startQuery > uiState.vertexList.size),
-                            keyboardOptions = KeyboardOptions.Default.copy(
-                                imeAction = ImeAction.Next,
-                                keyboardType = KeyboardType.Number
-                            ),
-                            keyboardActions = KeyboardActions(
-                                onDone = { }
-                            )
-                        )
-
-
-
-                        OutlinedTextField(
-                            value = endQuery?.toString() ?: "",
-                            onValueChange = { newValue: String ->
-                                if(newValue == ""){onValueChangeOfEnd(null)}
-                                if (newValue.isNotEmpty() && newValue.all { it.isDigit() }) {
-                                    onValueChangeOfEnd(newValue.toInt())
-                                }
-                            },
-                            singleLine = true,
-                            shape = MaterialTheme.shapes.large,
-                            modifier = Modifier
-                                .width(72.dp)
-                                .height(64.dp),
-                            label = { Text(text = "End") },
-                            isError = ( endQuery==null ) || (endQuery <= 0) && (startQuery == endQuery) && (endQuery > uiState.vertexList.size),
-                            keyboardOptions = KeyboardOptions.Default.copy(
-                                imeAction = ImeAction.Done,
-                                keyboardType = KeyboardType.Number
-                            ),
-                            keyboardActions = KeyboardActions(
-                                onDone = {
-                                    keyboardController?.hide()
-                                }
-                            )
-                        )
-
-
-
-                    }
-
-                    Box() {
-                        var selectedItem by remember { mutableStateOf<String?>(null) }
-                        var expanded by remember { mutableStateOf(false) }
-
-                        Button(
-                            onClick = { expanded = true },
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .height(40.dp)
-                                .width(70.dp)
-                                .background(Color.White)
-                                .border(1.dp, Color.Black, RoundedCornerShape(4.dp)),
-                            colors = ButtonDefaults.textButtonColors(contentColor = Color.Black),
-                        ) {
-                            Text(
-                                startQuery?.toString() ?: "start",
-                                textAlign = TextAlign.Center,
-                                overflow = TextOverflow.Clip
-                            )
-                        }
-
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                            modifier = Modifier.background(Color.White),
-                            offset = DpOffset(0.dp, 0.dp),
-                            properties = PopupProperties(focusable = true)
-                        ) {
-                            // 選択肢をリストする
-                            uiState.vertexList.forEach { vertex ->
-                                DropdownMenuItem(
-                                    onClick = {
-                                        selectedItem = "${vertex.id + 1}"
-                                        expanded = false
-                                        onValueChangeOfStart(vertex.id + 1)
-                                    },
-                                    text = { Text("${vertex.id + 1}") }
-                                )
-                            }
-                        }
-                    }
-
-                    Button(
-                        enabled = !loadingOrSaving
-                                &&(uiState.startQuery != null) && (uiState.endQuery != null)
-                                &&(uiState.startQuery > 0) && (uiState.endQuery > 0)
-                                && (uiState.startQuery <= uiState.vertexList.size)
-                                && (uiState.endQuery <= uiState.vertexList.size)
-                                && (uiState.endQuery != uiState.startQuery)
-                                && (uiState.edgeList.filter { edge ->
-                            !(Pair(edge.startId, edge.endId) != Pair(uiState.startQuery - 1,uiState.endQuery - 1)
-                                    && (Pair(edge.endId,edge.startId) != Pair(uiState.startQuery - 1,uiState.endQuery - 1) || directed) )
-                        }.toMutableList().size == 0 ),
-                        onClick = {
-                            if((uiState.startQuery != null)&& (uiState.endQuery != null)){
-                            addEdge(uiState.endQuery - 1 to uiState.startQuery - 1)
-                            }
-                            onValueChangeOfStart( null )
-                            onValueChangeOfEnd( null )
-                                  },
-                        content = { Text("Add vertex") }
-                    )
-                    if((uiState.startQuery != null) && (uiState.endQuery != null)
-                        && (uiState.edgeList.filter { edge ->
-                            !(Pair(edge.startId, edge.endId) != Pair(uiState.startQuery - 1,uiState.endQuery - 1)
-                                    && (Pair(edge.endId,edge.startId) != Pair(uiState.startQuery - 1,uiState.endQuery - 1) || directed) )
-                        }.toMutableList().size > 0 )){
-                        Text("The edge already exists (directed? : ${uiState.directed})")
-                    }
-                    if((uiState.endQuery != null)&&(uiState.endQuery == uiState.startQuery)){
-                        Text("Start and End must be different")
-                    }
-                    if((uiState.startQuery != null)&&((uiState.startQuery <= 0) || (uiState.startQuery > uiState.vertexList.size))) {
-                        Text("Start should be selected from the corresponding vertex range")
-                    }
-                    if((uiState.endQuery != null)&&((uiState.endQuery <= 0) || (uiState.endQuery > uiState.vertexList.size))) {
-                        Text("End should be selected from the corresponding vertex range")
-                    }
-
-
-
-                }
-
-
-            }
-
         }
-    }
 
- }
+    }
+}
+
+
 
 @Composable
 fun EachEdge(

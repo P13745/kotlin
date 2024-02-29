@@ -8,8 +8,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.lang.Math.random
 
-const val YMax = 1000f
-const val YMin = 0f + 50f
+const val YMax = 1000f - 50f
+const val YMin = 0f
 const val XMax = 1000f
 const val XMin = 0f + 50f
 
@@ -17,22 +17,38 @@ const val XMin = 0f + 50f
 data class UiState(
     var vertexList: List<Vertex>//List<Triple<Int, Float, Float>>
     = listOf(
-        Vertex(0, 500f, 900f),
-        Vertex(1 ,400f, 150f),
-        Vertex(2, 600f, 400f),
-        Vertex(3, 300f, 700f),
-        Vertex(4, 900f, 500f)),
+        Vertex(0, 500f, 150f),
+        Vertex(1, 250f, 350f),
+        Vertex(2, 350f, 650f),
+        Vertex(3, 650f, 650f),
+        Vertex(4, 800f, 350f),
+        Vertex(5, 500f,   0f),
+        Vertex(6, 100f, 350f),
+        Vertex(7, 250f, 800f),
+        Vertex(8, 750f, 800f),
+        Vertex(9, 950f, 350f),
+    ),
     // (internal id, x, y)
     var edgeList: List<Edge> //List<Triple<Int, Int, Int>>
     = listOf(
-        Edge(0,0, 1),
-        Edge(1,0, 2),
-        Edge(2,2, 1),
-        Edge(3,0, 3),
-        Edge(4,1, 3),
-        Edge(5,2, 4),
-        Edge(6,4, 4),
-        Edge(7,0, 4)),
+        Edge(0, 0, 2),
+        Edge(1, 2, 4),
+        Edge(2, 4, 1),
+        Edge(3, 1, 3),
+        Edge(4, 3, 0),
+        Edge(5, 0, 5),
+        Edge(6, 1, 6),
+        Edge(7, 2, 7),
+        Edge(8, 3, 8),
+        Edge(9, 4, 9),
+        Edge(10, 5, 6),
+        Edge(11, 6, 7),
+        Edge(12, 7, 8),
+        Edge(13, 8, 9),
+        Edge(14, 9, 5),
+
+
+    ),
     val startQuery: Int? = null,
     val endQuery: Int? = null,
     val movingSpeed: Float = 50f,
@@ -47,27 +63,7 @@ class GraphViewModel(
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-/*
-    //===============
-    init {
-        loadDataFromDatabase()
-    }
 
-
-    private fun loadDataFromDatabase() {
-        viewModelScope.launch {
-            val edgeList = edgeViewModel.getFullEdge().firstOrNull() ?: emptyList()
-            val vertexList = vertexViewModel.getFullVertex().firstOrNull() ?: emptyList()
-
-            _uiState.value = UiState(
-                vertexList = vertexList,
-                edgeList = edgeList
-            )
-        }
-    }
-    //===============
-
- */
 
 
 
@@ -191,8 +187,6 @@ fun deleteVertex(id: Int) {
             Edge(index, edge.startId, edge.endId)}
 
         _uiState.value = currentUiState.copy( edgeList = reindexedEdgeList)
-
-
 
     }
 

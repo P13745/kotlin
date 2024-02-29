@@ -201,14 +201,7 @@ fun GraphApp(
 
                 )
         }
-/*
-        Text(vertexList.size.toString())
-        Text(edgeList.size.toString())
-        Text(vertexList2.size.toString())
-        Text(edgeList2.size.toString())
-        Text(vertexList3.size.toString())
-        Text(edgeList3.size.toString())
- */
+
     }
 
 }
