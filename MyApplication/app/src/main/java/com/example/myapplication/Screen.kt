@@ -267,12 +267,20 @@ fun SaveLoadScreen(
 ){
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.SpaceBetween
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.CenterHorizontally
     ){
+
+        Text(
+            text = "Save and Load",
+            fontSize = 20.sp
+        )
+
         Card() {
             Row(
                 modifier = Modifier
-                    .fillMaxSize(),
+                    .fillMaxWidth()
+                    .height(90.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -786,8 +794,6 @@ fun EdgeList(
     deleteEdge: (Pair<Int, Int>) -> Unit,
     loadingOrSaving: Boolean,
 ) {
-
-
     val edgeList = uiState.edgeList
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
