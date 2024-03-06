@@ -12,11 +12,10 @@ interface  VertexDao {
     @Query("SELECT * FROM vertex")
     fun getAll(): Flow<List<Vertex>>
 
-
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(vertex: List<Vertex>)
 
-    @Query("DELETE FROM vertex") // すべてのデータを削除するクエリ
+    @Query("DELETE FROM vertex")
     suspend fun deleteAll()
 }
 @Dao

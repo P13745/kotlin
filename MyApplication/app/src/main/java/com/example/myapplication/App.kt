@@ -41,8 +41,7 @@ fun GraphApp(
     vertexViewModel3: VertexViewModel3 = viewModel(factory = VertexViewModel3.factory),
     edgeViewModel3: EdgeViewModel3 = viewModel(factory = EdgeViewModel3.factory),
 ) {
-    val graphViewModel: GraphViewModel =
-        viewModel() //右のではダメ!!  //GraphViewModel(/*edgeViewModel, vertexViewModel*/)
+    val graphViewModel: GraphViewModel = viewModel()
     val uiState = graphViewModel.uiState.collectAsState().value
     val vertexList by vertexViewModel.getFullVertex().collectAsState(emptyList())
     val edgeList by edgeViewModel.getFullEdge().collectAsState(emptyList())
@@ -51,11 +50,9 @@ fun GraphApp(
     val vertexList3 by vertexViewModel3.getFullVertex3().collectAsState(emptyList())
     val edgeList3 by edgeViewModel3.getFullEdge3().collectAsState(emptyList())
 
-
-
     var loadingOrSaving by remember { mutableStateOf(false) }
 
-    //val edgeList by graphViewModel.edgeList
+
     Column(modifier = Modifier.fillMaxSize()) {
         GraphTopBar()
 
@@ -67,7 +64,7 @@ fun GraphApp(
             VertexAndEdgeFromList(
                 vertexList = uiState.vertexList,
                 edgeList = uiState.edgeList,
-                directed = uiState.directed
+                //directed = uiState.directed
             )
         }
 
@@ -99,6 +96,7 @@ fun GraphApp(
                 directed = uiState.directed,
                 loadingOrSaving = loadingOrSaving,
                 modeChange = { graphViewModel.updateMode(it) },
+                changeSliderAction = { graphViewModel.updateMovingSpeed(it) },
                 saveAction = {
                     CoroutineScope(Dispatchers.Main).launch {
                         loadingOrSaving = true
@@ -198,7 +196,6 @@ fun GraphApp(
                 emptyOrNot = vertexList.isEmpty(),
                 emptyOrNot2 = vertexList2.isEmpty(),
                 emptyOrNot3 = vertexList3.isEmpty(),
-
                 )
         }
 
@@ -210,7 +207,7 @@ fun GraphApp(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GraphTopBar() {
-    Box() {
+    Box {
         CenterAlignedTopAppBar(
             title = { Text("Graph application") }
         )

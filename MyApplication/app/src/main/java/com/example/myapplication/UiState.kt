@@ -15,7 +15,7 @@ const val XMin = 0f + 50f
 
 
 data class UiState(
-    var vertexList: List<Vertex>//List<Triple<Int, Float, Float>>
+    var vertexList: List<Vertex>
     = listOf(
         Vertex(0, 500f, 150f),
         Vertex(1, 250f, 350f),
@@ -28,8 +28,7 @@ data class UiState(
         Vertex(8, 750f, 800f),
         Vertex(9, 950f, 350f),
     ),
-    // (internal id, x, y)
-    var edgeList: List<Edge> //List<Triple<Int, Int, Int>>
+    var edgeList: List<Edge>
     = listOf(
         Edge(0, 0, 2),
         Edge(1, 2, 4),
@@ -46,8 +45,6 @@ data class UiState(
         Edge(12, 7, 8),
         Edge(13, 8, 9),
         Edge(14, 9, 5),
-
-
     ),
     val startQuery: Int? = null,
     val endQuery: Int? = null,
@@ -56,42 +53,31 @@ data class UiState(
     val mode: String = "Vertex"
 )
 
-class GraphViewModel(
-    //private val edgeViewModel: EdgeViewModel,
-    //private val vertexViewModel: VertexViewModel
-) : ViewModel() {
+class GraphViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-
-
-
-
     fun load(vertexList: List<Vertex>, edgeList: List<Edge>){
-        //var currentUiState = _uiState.value.copy()
-        //_uiState.value = currentUiState.copy(vertexList = vertexList, edgeList = edgeList)
         _uiState.value = _uiState.value.copy(vertexList = vertexList, edgeList = edgeList)
-
     }
-
 
     fun moveVertex(id: Int, direction: String, distance: Float) {
         val currentUiState = _uiState.value.copy()
         if (currentUiState.vertexList.size > id && id >= 0) {
-            var X = currentUiState.vertexList[id].x
-            var Y = currentUiState.vertexList[id].y
+            var x = currentUiState.vertexList[id].x
+            var y = currentUiState.vertexList[id].y
             when (direction) {
-                "UP" -> Y -= distance
-                "DOWN" -> Y += distance
-                "RIGHT" -> X += distance
-                "LEFT" -> X -= distance
+                "UP" -> y -= distance
+                "DOWN" -> y += distance
+                "RIGHT" -> x += distance
+                "LEFT" -> x -= distance
                 else -> {}
             }
-            X = X.coerceIn(XMin, XMax) // XMinとXMaxの間に収める
-            Y = Y.coerceIn(YMin, YMax) // YMinとYMaxの間に収める
+            x = x.coerceIn(XMin, XMax)
+            y = y.coerceIn(YMin, YMax)
 
             val updatedVertexList = currentUiState.vertexList.toMutableList()
-            updatedVertexList[id] = updatedVertexList[id].copy(x = X, y = Y)
+            updatedVertexList[id] = updatedVertexList[id].copy(x = x, y = y)
 
             _uiState.value = currentUiState.copy(vertexList = updatedVertexList)
 
@@ -190,7 +176,6 @@ fun deleteVertex(id: Int) {
 
     }
 
-
     fun updateMode(mode: String){
         _uiState.value = _uiState.value.copy(mode = mode)
     }
@@ -200,9 +185,9 @@ fun deleteVertex(id: Int) {
         _uiState.value = _uiState.value.copy(startQuery = query)
     }
 
-
-
-
+    fun updateMovingSpeed(speed: Float){
+        _uiState.value = _uiState.value.copy(movingSpeed = speed)
+    }
 
     fun updateEndQuery(query: Int?){
 
