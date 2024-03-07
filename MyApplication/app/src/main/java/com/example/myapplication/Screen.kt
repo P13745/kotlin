@@ -3,7 +3,6 @@ package com.example.myapplication
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,23 +12,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ButtonColors
+import androidx.compose.material.Slider
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -38,19 +32,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -65,7 +59,7 @@ import com.example.myapplication.data.Vertex
 fun VertexAndEdgeFromList(
     vertexList: List<Vertex>,
     edgeList: List<Edge>,
-    directed: Boolean
+    //directed: Boolean,
 ) {
     val shift = 60f
     val circleSizePx = with(LocalDensity.current) { (8.dp).toPx() }
@@ -83,8 +77,8 @@ fun VertexAndEdgeFromList(
             val paint = android.graphics.Paint().apply { textSize = 48f }
             drawContext.canvas.nativeCanvas.drawText(
                 text,
-                it.x - paint.measureText(text)/2,
-                it.y + shift ,
+                it.x - paint.measureText(text) / 2,
+                it.y + shift,
                 paint,
             )
         }
@@ -92,11 +86,12 @@ fun VertexAndEdgeFromList(
         edgeList.forEach { edge ->
 
 
-            if(
+            if (
                 edge.startId >= 0
                 && edge.startId < vertexList.size
-                && edge.endId >=0
-                && edge.endId < vertexList.size) {
+                && edge.endId >= 0
+                && edge.endId < vertexList.size
+            ) {
                 val startVertex = vertexList[edge.startId]
                 val endVertex = vertexList[edge.endId]
 
@@ -107,45 +102,41 @@ fun VertexAndEdgeFromList(
                     strokeWidth = 2f
                 )
             }
-
-
         }
     }
 }
 
 
-
-
-
 @Composable
 fun EditTable(
     uiState: UiState,
-    addVertex: ()->Unit,
+    addVertex: () -> Unit,
     deleteVertex: (Int) -> Unit,
-    addEdge: (Pair<Int, Int>) ->Unit,
+    addEdge: (Pair<Int, Int>) -> Unit,
     deleteEdge: (Pair<Int, Int>) -> Unit,
     onValueChangeOfStart: (Int?) -> Unit,
     onValueChangeOfEnd: (Int?) -> Unit,
-    move: (id: Int, direction: String, distance: Float) ->Unit,
+    move: (id: Int, direction: String, distance: Float) -> Unit,
     movingSpeed: Float,
     startQuery: Int?,
     endQuery: Int?,
     directed: Boolean,
     loadingOrSaving: Boolean,
     modeChange: (String) -> Unit,
+    changeSliderAction: (Float) -> Unit,
     loadAction: () -> Unit,
     saveAction: () -> Unit,
     loadAction2: () -> Unit,
     saveAction2: () -> Unit,
     loadAction3: () -> Unit,
     saveAction3: () -> Unit,
-    emptyOrNot : Boolean,
-    emptyOrNot2 : Boolean,
-    emptyOrNot3 : Boolean,
-){
+    emptyOrNot: Boolean,
+    emptyOrNot2: Boolean,
+    emptyOrNot3: Boolean,
+) {
 
 
-    Column() {
+    Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -153,18 +144,20 @@ fun EditTable(
         ) {
 
             Button(
+                modifier = Modifier.shadow(6.dp, shape = MaterialTheme.shapes.medium),
                 onClick = { modeChange("Vertex") },
-                content = { Text("Vertex") }
+                content = { Text("Vertex") },
             )
             Button(
+                modifier = Modifier.shadow(6.dp, shape = MaterialTheme.shapes.medium),
                 onClick = { modeChange("Edge") },
                 content = { Text("Edge") }
             )
             Button(
+                modifier = Modifier.shadow(6.dp, shape = MaterialTheme.shapes.medium),
                 onClick = { modeChange("Save/Load") },
                 content = { Text("Save/Load") }
             )
-
 
         }
 
@@ -172,7 +165,7 @@ fun EditTable(
             modifier = Modifier.fillMaxSize()
         ) {
 
-            if (uiState.mode == "Vertex" ) {
+            if (uiState.mode == "Vertex") {
 
                 VertexList(
                     uiState = uiState,
@@ -183,7 +176,10 @@ fun EditTable(
                 )
 
                 Button(
-                    modifier = Modifier.align(Alignment.BottomEnd),
+                    modifier = Modifier
+                        .width(130.dp)
+                        .align(Alignment.BottomEnd)
+                        .shadow(6.dp),
                     onClick = { modeChange("Edit vertex") },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.secondary,
@@ -193,13 +189,13 @@ fun EditTable(
                     shape = RoundedCornerShape(8.dp)
                 )
             }
-            if(uiState.mode == "Edit vertex") {
+            if (uiState.mode == "Edit vertex") {
                 EditVertex(
                     addVertex = addVertex,
+                    uiState = uiState,
+                    changeSliderAction = changeSliderAction
                 )
             }
-
-
 
             if (uiState.mode == "Edge") {
                 EdgeList(
@@ -208,7 +204,10 @@ fun EditTable(
                     loadingOrSaving = loadingOrSaving
                 )
                 Button(
-                    modifier = Modifier.align(Alignment.BottomEnd),
+                    modifier = Modifier
+                        .width(130.dp)
+                        .align(Alignment.BottomEnd)
+                        .shadow(6.dp),
                     onClick = { modeChange("Edit edge") },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.secondary,
@@ -219,7 +218,7 @@ fun EditTable(
                 )
             }
 
-            if(uiState.mode == "Edit edge") {
+            if (uiState.mode == "Edit edge") {
                 EditEdge(
                     uiState = uiState,
                     addEdge = addEdge,
@@ -232,7 +231,6 @@ fun EditTable(
                 )
             }
 
-
             if (uiState.mode == "Save/Load") {
                 SaveLoadScreen(
                     loadAction = loadAction,
@@ -241,18 +239,15 @@ fun EditTable(
                     saveAction2 = saveAction2,
                     loadAction3 = loadAction3,
                     saveAction3 = saveAction3,
-                    modeChange = modeChange,
+                    //modeChange = modeChange,
                     emptyOrNot = emptyOrNot,
                     emptyOrNot2 = emptyOrNot2,
                     emptyOrNot3 = emptyOrNot3,
                     loadingOrSaving = loadingOrSaving,
-
                     )
             }
         }
-
     }
-
 }
 
 @Composable
@@ -263,24 +258,24 @@ fun SaveLoadScreen(
     saveAction2: () -> Unit,
     loadAction3: () -> Unit,
     saveAction3: () -> Unit,
-    modeChange: (String) -> Unit,
-    emptyOrNot : Boolean,
-    emptyOrNot2 : Boolean,
-    emptyOrNot3 : Boolean,
-    loadingOrSaving: Boolean
-){
+    //modeChange: (String) -> Unit,
+    emptyOrNot: Boolean,
+    emptyOrNot2: Boolean,
+    emptyOrNot3: Boolean,
+    loadingOrSaving: Boolean,
+) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally
-    ){
+    ) {
 
         Text(
             text = "Save and Load",
             fontSize = 20.sp
         )
 
-        Card() {
+        Card {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -290,12 +285,14 @@ fun SaveLoadScreen(
             ) {
                 Text("Save slot 1")
                 Button(
+                    modifier = Modifier.shadow(6.dp, shape = MaterialTheme.shapes.medium),
                     content = { Text("Load") },
                     onClick = loadAction,
                     enabled = !loadingOrSaving && !emptyOrNot
                 )
 
                 Button(
+                    modifier = Modifier.shadow(6.dp, shape = MaterialTheme.shapes.medium),
                     content = { Text("Save") },
                     onClick = saveAction,
                     enabled = !loadingOrSaving
@@ -303,7 +300,7 @@ fun SaveLoadScreen(
             }
         }
         Spacer(Modifier.height(4.dp))
-        Card() {
+        Card {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -313,12 +310,14 @@ fun SaveLoadScreen(
             ) {
                 Text("Save slot 2")
                 Button(
+                    modifier = Modifier.shadow(6.dp, shape = MaterialTheme.shapes.medium),
                     content = { Text("Load") },
                     onClick = loadAction2,
                     enabled = !loadingOrSaving && !emptyOrNot2
                 )
 
                 Button(
+                    modifier = Modifier.shadow(6.dp, shape = MaterialTheme.shapes.medium),
                     content = { Text("Save") },
                     onClick = saveAction2,
                     enabled = !loadingOrSaving
@@ -326,7 +325,7 @@ fun SaveLoadScreen(
             }
         }
         Spacer(Modifier.height(4.dp))
-        Card() {
+        Card {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -336,57 +335,51 @@ fun SaveLoadScreen(
             ) {
                 Text("Save slot 3")
                 Button(
+                    modifier = Modifier.shadow(6.dp, shape = MaterialTheme.shapes.medium),
                     content = { Text("Load") },
                     onClick = loadAction3,
                     enabled = !loadingOrSaving && !emptyOrNot3
                 )
 
                 Button(
+                    modifier = Modifier.shadow(6.dp, shape = MaterialTheme.shapes.medium),
                     content = { Text("Save") },
                     onClick = saveAction3,
                     enabled = !loadingOrSaving
                 )
             }
         }
-
-
-
-
     }
-
 }
-
-
 
 
 @Composable
 fun VertexList(
     uiState: UiState,
     deleteVertex: (Int) -> Unit,
-    move: (id: Int, direction: String, distance: Float) ->Unit,
+    move: (id: Int, direction: String, distance: Float) -> Unit,
     movingSpeed: Float,
     loadingOrSaving: Boolean,
 ) {
     val vertexList = uiState.vertexList
-
     Column(
         modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally) {
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Text(
             text = "Vertex",
-            fontSize = 20.sp
+            fontSize = 20.sp,
         )
         LazyColumn(
             modifier = Modifier,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-
             items(items = vertexList,
                 key = { vertex -> vertex.id }) { vertex ->
                 val id = vertexList.indexOf(vertex)
                 EachVertex(
-                    vertex = vertex,
+                    //vertex = vertex,
                     deleteVertex = deleteVertex,
                     id = id,
                     move = move,
@@ -394,38 +387,53 @@ fun VertexList(
                     loadingOrSaving = loadingOrSaving
                 )
                 Spacer(Modifier.height(4.dp))
-
             }
 
-
+            item {
+                Spacer(modifier = Modifier.height(45.dp))
+            }
         }
     }
 }
 
 @Composable
 fun EditVertex(
-    addVertex: ()->Unit,
-){
+    addVertex: () -> Unit,
+    uiState: UiState,
+    changeSliderAction: (Float) -> Unit,
+) {
     Box(
         modifier = Modifier
             .background(
                 color = Color.Gray.copy(alpha = 0.5f)
             )
-            .fillMaxSize()) {
+            .fillMaxSize()
+    ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(30.dp))
+            var sliderPosition by remember { mutableStateOf(uiState.movingSpeed) }
+            Text("Moving speed: ${uiState.movingSpeed.toInt()}")
+            Slider(
+                value = sliderPosition,
+                onValueChange = { newValue ->
+                    sliderPosition = newValue
+                    changeSliderAction(newValue)
+                },
+                valueRange = 0f..200f,
+                modifier = Modifier.width(350.dp)
+            )
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
                 var vertexNumber by remember { mutableStateOf(1) }
 
-
-                Box() {
+                Box {
                     var expanded by remember { mutableStateOf(false) }
 
                     Button(
@@ -468,6 +476,7 @@ fun EditVertex(
                 clickCount = vertexNumber
 
                 Button(
+                    modifier = Modifier.shadow(6.dp, shape = MaterialTheme.shapes.medium),
                     onClick = {
                         repeat(clickCount) {
                             addVertex()
@@ -478,37 +487,37 @@ fun EditVertex(
             }
         }
     }
-
-
-
 }
 
 
 @Composable
 fun EachVertex(
-    vertex: Vertex,
+    //vertex: Vertex,
     deleteVertex: (Int) -> Unit,
     id: Int,
-    move: (id: Int, direction: String, distance: Float) ->Unit,
+    move: (id: Int, direction: String, distance: Float) -> Unit,
     movingSpeed: Float,
     loadingOrSaving: Boolean,
-){
-
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-    ){
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier.fillMaxWidth()
-        ){
-            Text( (id + 1).toString())
-
+        ) {
+            Text(
+                modifier = Modifier.width(50.dp),
+                text = (id + 1).toString(),
+                textAlign = TextAlign.Center
+            )
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Row(
-                modifier = Modifier.clip(shape = RoundedCornerShape(16.dp))
+                modifier = Modifier
+                    .clip(shape = RoundedCornerShape(16.dp))
             ) {
                 Button(
                     modifier = Modifier
@@ -551,29 +560,24 @@ fun EachVertex(
                 //comment
             }
 
-
-
-
             Button(
                 modifier = Modifier
-                    .height(40.dp),
-                onClick = { deleteVertex(id) },//====================
+                    .height(40.dp)
+                    .shadow(6.dp, shape = MaterialTheme.shapes.medium),
+                onClick = { deleteVertex(id) },
                 content = { Text("Delete") },
                 enabled = !loadingOrSaving,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
             )
 
-
         }
-
     }
-
 }
 
 @Composable
 fun EditEdge(
     uiState: UiState,
-    addEdge: (Pair<Int, Int>) ->Unit,
+    addEdge: (Pair<Int, Int>) -> Unit,
     onValueChangeOfStart: (Int?) -> Unit,
     onValueChangeOfEnd: (Int?) -> Unit,
     startQuery: Int?,
@@ -581,27 +585,28 @@ fun EditEdge(
     directed: Boolean,
     loadingOrSaving: Boolean,
 ) {
-
     Box(
         modifier = Modifier
-        .background(
-            color = Color.Gray.copy(alpha = 0.5f) // 半透明の薄い灰色
-        )
-        .fillMaxSize()) {
+            .background(
+                color = Color.Gray.copy(alpha = 0.5f)
+            )
+            .fillMaxSize()
+    ) {
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
 
         ) {
 
-
+            Spacer(modifier = Modifier.height(30.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                Box() {
+
+                Box {
                     var selectedItem by remember { mutableStateOf<String?>(null) }
                     var expanded by remember { mutableStateOf(false) }
 
@@ -644,8 +649,7 @@ fun EditEdge(
                 }
 
                 Text("-")
-
-                Box() {
+                Box {
                     var selectedItem by remember { mutableStateOf<String?>(null) }
                     var expanded by remember { mutableStateOf(false) }
 
@@ -673,7 +677,6 @@ fun EditEdge(
                         offset = DpOffset(0.dp, 0.dp),
                         properties = PopupProperties(focusable = true)
                     ) {
-                        // 選択肢をリストする
                         uiState.vertexList.forEach { vertex ->
                             DropdownMenuItem(
                                 onClick = {
@@ -710,6 +713,7 @@ fun EditEdge(
             var showDialog by remember { mutableStateOf(false) }
 
             Button(
+                modifier = Modifier.shadow(6.dp, shape = MaterialTheme.shapes.medium),
                 onClick = {
                     if (enabled) {
                         if ((uiState.startQuery != null) && (uiState.endQuery != null)) {
@@ -721,7 +725,7 @@ fun EditEdge(
                         showDialog = true
                     }
                 },
-                content = { Text("Add vertex") }
+                content = { Text("Add edge") }
             )
             if ((uiState.startQuery != null) && (uiState.endQuery != null)
                 && (uiState.edgeList.filter { edge ->
@@ -747,17 +751,16 @@ fun EditEdge(
                 Text("End should be selected from the corresponding vertex range")
             }
 
-
             if (showDialog) {
                 AlertDialog(
                     onDismissRequest = { showDialog = false },
                     title = { Text("Alert") },
                     text = {
                         Column {
-                            if(uiState.startQuery == null){
+                            if (uiState.startQuery == null) {
                                 Text("'Start' must be entered")
                             }
-                            if(uiState.endQuery == null){
+                            if (uiState.endQuery == null) {
                                 Text("'End' must be entered")
                             }
                             if ((uiState.startQuery != null) && (uiState.endQuery != null)
@@ -787,6 +790,7 @@ fun EditEdge(
                     },
                     confirmButton = {
                         Button(
+                            modifier = Modifier.shadow(6.dp, shape = MaterialTheme.shapes.medium),
                             onClick = { showDialog = false },
                             colors = ButtonDefaults.buttonColors()
                         ) {
@@ -795,12 +799,9 @@ fun EditEdge(
                     }
                 )
             }
-
-
         }
     }
 }
-
 
 
 @Composable
@@ -811,7 +812,10 @@ fun EdgeList(
 ) {
     val edgeList = uiState.edgeList
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
 
         Text(
             text = "Edge",
@@ -833,47 +837,57 @@ fun EdgeList(
                 )
                 Spacer(Modifier.height(4.dp))
             }
-
+            item {
+                Spacer(modifier = Modifier.height(45.dp))
+            }
         }
-
     }
 }
-
 
 
 @Composable
 fun EachEdge(
     edge: Edge,
     deleteEdge: (Pair<Int, Int>) -> Unit,
-    loadingOrSaving: Boolean
-){
-
-    Card(){
-       Row(verticalAlignment = Alignment.CenterVertically,
-           horizontalArrangement = Arrangement.SpaceEvenly,
-           modifier = Modifier.fillMaxWidth()
-       ){
-           Text(text= (edge.startId + 1).toString() + " - " + (edge.endId + 1).toString())
-           Button(
-               onClick = {  deleteEdge( Pair(edge.startId, edge.endId)) },
-               content = { Text("Delete") },
-               enabled = !loadingOrSaving
-           )
-
-       }
-
+    loadingOrSaving: Boolean,
+) {
+    Card {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = buildAnnotatedString {
+                    withStyle(style = SpanStyle(fontSize = 16.sp)) {
+                        append((edge.startId + 1).toString())
+                    }
+                    append(" - ")
+                    withStyle(style = SpanStyle(fontSize = 16.sp)) {
+                        append((edge.endId + 1).toString())
+                    }
+                },
+                modifier = Modifier.width(60.dp),
+            )
+            Button(
+                modifier = Modifier
+                    .shadow(6.dp, shape = MaterialTheme.shapes.medium)
+                    .height(40.dp),
+                onClick = { deleteEdge(Pair(edge.startId, edge.endId)) },
+                content = { Text("Delete") },
+                enabled = !loadingOrSaving,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            )
+        }
     }
-
 }
-
 
 
 @Preview
 @Composable
-fun previewEditTable() {
+fun PreviewEditTable() {
     val graphViewModel: GraphViewModel = viewModel()
     val uiState = graphViewModel.uiState.collectAsState().value
-
     EditTable(
         uiState = uiState,
         addVertex = {},
@@ -882,13 +896,14 @@ fun previewEditTable() {
         deleteEdge = {},
         onValueChangeOfStart = {},
         onValueChangeOfEnd = {},
-        move = { _, _, _ -> {} },
-        movingSpeed =10f,
+        move = { _, _, _ -> },
+        movingSpeed = 10f,
         startQuery = 1,
-        endQuery =1,
+        endQuery = 1,
         directed = false,
-        loadingOrSaving = false ,
+        loadingOrSaving = false,
         modeChange = {},
+        changeSliderAction = {},
         loadAction = {},
         saveAction = {},
         loadAction2 = {},
