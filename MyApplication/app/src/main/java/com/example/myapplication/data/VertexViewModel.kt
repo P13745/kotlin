@@ -61,7 +61,7 @@ class VertexViewModel2(private val vertexDao2: VertexDao2): ViewModel() {
             //==================================================================
 
             mutableList.mapIndexed { index, vertex ->
-                vertex.copy(id = index )        ///??????????????????
+                vertex.copy(id = index )
             }
         }
     }
@@ -92,7 +92,7 @@ class VertexViewModel3(private val vertexDao3: VertexDao3): ViewModel() {
             //==================================================================
 
             mutableList.mapIndexed { index, vertex ->
-                vertex.copy(id = index )        ///??????????????????
+                vertex.copy(id = index )
             }
         }
     }
