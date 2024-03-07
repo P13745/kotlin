@@ -77,19 +77,12 @@ fun GraphApp(
                 uiState = uiState,
                 addVertex = { graphViewModel.addNewVertex() },
                 deleteVertex = { graphViewModel.deleteVertex(it) },
-                addEdge = { (start, end) ->
-                    graphViewModel.addNewEdge(
-                        start,
-                        end,
-                        directed = uiState.directed
-                    )
-                },
-                deleteEdge = { graphViewModel.deleteEdge(it, directed = false) },
+                addEdge = { startId, endId -> graphViewModel.addNewEdge(startId, endId, directed = uiState.directed) },
+                deleteEdge = { startId, endId -> graphViewModel.deleteEdge(startId, endId, directed = uiState.directed) },
                 onValueChangeOfStart = { graphViewModel.updateStartQuery(it) },
                 onValueChangeOfEnd = { graphViewModel.updateEndQuery(it) },
-                move = { id, direction, distance ->
-                    graphViewModel.moveVertex(id, direction, distance)
-                },
+                move = { id, direction, distance -> graphViewModel.moveVertex(id, direction, distance) },
+                moveAllVertex = { direction, distance -> graphViewModel.moveAllVertex(direction, distance)},
                 movingSpeed = uiState.movingSpeed,
                 startQuery = uiState.startQuery,
                 endQuery = uiState.endQuery,
@@ -176,7 +169,6 @@ fun GraphApp(
                         loadingOrSaving = false
                     }
                 },
-
                 loadAction3 = { graphViewModel.load(
                     vertexList3.map { vertex3 ->
                         Vertex(
@@ -198,9 +190,10 @@ fun GraphApp(
                 emptyOrNot3 = vertexList3.isEmpty(),
                 )
         }
-
+        SwitchBar(
+            modeChange = { graphViewModel.updateMode(it) },
+        )
     }
-
 }
 
 
@@ -212,7 +205,6 @@ fun GraphTopBar() {
             title = { Text("Graph application") }
         )
     }
-
 }
 
 
